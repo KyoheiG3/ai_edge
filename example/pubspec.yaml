@@ -1,0 +1,23 @@
+name: ai_edge_example
+description: "Demonstrates how to use the ai_edge plugin."
+publish_to: "none"
+
+environment:
+  sdk: ^3.9.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  ai_edge:
+    path: ../
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  integration_test:
+    sdk: flutter
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
