@@ -1,5 +1,7 @@
 import Flutter
 import UIKit
+import MediaPipeTasksGenAI
+import MediaPipeTasksGenAIC
 
 public class AiEdgePlugin: NSObject, FlutterPlugin {
   public static func register(with registrar: FlutterPluginRegistrar) {

@@ -1,14 +1,24 @@
 PODS:
   - ai_edge (0.0.1):
     - Flutter
+    - MediaPipeTasksGenAI (= 0.10.24)
+    - MediaPipeTasksGenAIC (= 0.10.24)
   - Flutter (1.0.0)
   - integration_test (0.0.1):
     - Flutter
+  - MediaPipeTasksGenAI (0.10.24):
+    - MediaPipeTasksGenAIC (= 0.10.24)
+  - MediaPipeTasksGenAIC (0.10.24)
 
 DEPENDENCIES:
   - ai_edge (from `.symlinks/plugins/ai_edge/ios`)
   - Flutter (from `Flutter`)
   - integration_test (from `.symlinks/plugins/integration_test/ios`)
+
+SPEC REPOS:
+  trunk:
+    - MediaPipeTasksGenAI
+    - MediaPipeTasksGenAIC
 
 EXTERNAL SOURCES:
   ai_edge:
@@ -19,10 +29,12 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/integration_test/ios"
 
 SPEC CHECKSUMS:
-  ai_edge: 3c603601893ac290be94d3b27ac628b1572cb422
+  ai_edge: 727e35faa360faf9b6fc71937efda5f348c222d6
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   integration_test: 4a889634ef21a45d28d50d622cf412dc6d9f586e
+  MediaPipeTasksGenAI: 076ba7032a6e9da16db9c7cf0c3b67c751c18bc1
+  MediaPipeTasksGenAIC: ec35d9f431f6a6b651a0bc9f67a4ed149ffa575c
 
-PODFILE CHECKSUM: 3c63482e143d1b91d2d2560aee9fb04ecc74ac7e
+PODFILE CHECKSUM: 263a3e327ec8c049d1083c4cdd9efcd73625e571
 
 COCOAPODS: 1.16.2

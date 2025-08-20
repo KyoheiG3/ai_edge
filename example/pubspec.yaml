@@ -1,5 +1,6 @@
 name: ai_edge_example
 description: "Demonstrates how to use the ai_edge plugin."
+version: 1.0.0
 publish_to: "none"
 
 environment:
