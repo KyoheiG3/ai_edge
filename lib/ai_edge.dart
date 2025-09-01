@@ -36,13 +36,15 @@ class AiEdge {
     SessionConfig? sessionConfig,
   }) async {
     // Create model
-    await createModel(ModelConfig(
-      modelPath: modelPath,
-      maxTokens: maxTokens,
-      supportedLoraRanks: supportedLoraRanks,
-      preferredBackend: preferredBackend,
-      maxNumImages: maxNumImages,
-    ));
+    await createModel(
+      ModelConfig(
+        modelPath: modelPath,
+        maxTokens: maxTokens,
+        supportedLoraRanks: supportedLoraRanks,
+        preferredBackend: preferredBackend,
+        maxNumImages: maxNumImages,
+      ),
+    );
 
     // Create session with default or provided config
     await createSession(sessionConfig ?? const SessionConfig());
@@ -71,29 +73,19 @@ class AiEdge {
   /// Generates an async response and returns a stream of partial results
   Stream<GenerationEvent> generateResponseAsync([String? prompt]) {
     // First get the stream (which sets up the event listener)
-    final controller = StreamController<GenerationEvent>.broadcast()
+    final controller = StreamController<GenerationEvent>.broadcast(sync: true)
       ..onListen = () {
         // When the stream is listened to, we can start the async generation
         AiEdgePlatform.instance.generateResponseAsync(prompt);
       };
 
     final stream = AiEdgePlatform.instance.getPartialResultStream();
-    controller
-        .addStream(stream)
-        .then(
-          (_) {
-            // If the stream completes, we can close the controller
-            if (!controller.isClosed) {
-              controller.close();
-            }
-          },
-          onError: (error) {
-            // If there's an error, we can add it to the controller
-            if (!controller.isClosed) {
-              controller.addError(error);
-            }
-          },
-        );
+    controller.addStream(stream).then((_) {
+      // If the stream completes, we can close the controller
+      if (!controller.isClosed) {
+        controller.close();
+      }
+    });
 
     return controller.stream;
   }
