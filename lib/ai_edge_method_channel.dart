@@ -1,4 +1,7 @@
-part of 'ai_edge.dart';
+import 'package:flutter/services.dart';
+
+import 'ai_edge_platform_interface.dart';
+import 'types.dart';
 
 /// An implementation of [MethodChannelAiEdge] that uses
 /// a [MethodChannel] and an [EventChannel] for communicating with native code.
@@ -7,12 +10,12 @@ class MethodChannelAiEdge extends AiEdgePlatform {
   final EventChannel _eventChannel = const EventChannel('ai_edge/events');
 
   @override
-  Future<void> createModel(InferenceModelConfig config) async {
+  Future<void> createModel(ModelConfig config) async {
     await _methodChannel.invokeMethod('createModel', config.toMap());
   }
 
   @override
-  Future<void> createSession(InferenceSessionConfig config) async {
+  Future<void> createSession(SessionConfig config) async {
     await _methodChannel.invokeMethod('createSession', config.toMap());
   }
 
@@ -47,12 +50,12 @@ class MethodChannelAiEdge extends AiEdgePlatform {
   }
 
   @override
-  Stream<Map<String, dynamic>> getPartialResultStream() {
+  Stream<GenerationEvent> getPartialResultStream() {
     return _eventChannel.receiveBroadcastStream().map((event) {
       if (event is Map) {
-        return Map<String, dynamic>.from(event);
+        return GenerationEvent.fromMap(Map<String, dynamic>.from(event));
       }
-      return {'partialResult': event.toString(), 'done': false};
+      return GenerationEvent(partialResult: event.toString(), done: false);
     });
   }
 }

@@ -1,4 +1,9 @@
-part of 'ai_edge.dart';
+import 'dart:typed_data';
+
+import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+
+import 'ai_edge_method_channel.dart';
+import 'types.dart';
 
 /// The base platform interface for AiEdge.
 abstract class AiEdgePlatform extends PlatformInterface {
@@ -16,10 +21,10 @@ abstract class AiEdgePlatform extends PlatformInterface {
   }
 
   /// Creates a new model with the given configuration
-  Future<void> createModel(InferenceModelConfig config);
+  Future<void> createModel(ModelConfig config);
 
   /// Creates a new session with the given configuration
-  Future<void> createSession(InferenceSessionConfig config);
+  Future<void> createSession(SessionConfig config);
 
   /// Closes both model and session
   Future<void> close();
@@ -37,5 +42,5 @@ abstract class AiEdgePlatform extends PlatformInterface {
   Future<void> generateResponseAsync(String? prompt);
 
   /// Returns a stream of partial results
-  Stream<Map<String, dynamic>> getPartialResultStream();
+  Stream<GenerationEvent> getPartialResultStream();
 }

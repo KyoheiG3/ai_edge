@@ -1,17 +1,22 @@
-part of 'ai_edge.dart';
-
 /// Preferred backend for model inference
-enum PreferredBackend { unknown, cpu, gpu, gpuFloat16, gpuMixed, gpuFull, tpu }
+enum PreferredBackend {
+  unknown(0),
+  cpu(1),
+  gpu(2);
+
+  final int value;
+  const PreferredBackend(this.value);
+}
 
 /// Configuration for the inference model
-class InferenceModelConfig {
+class ModelConfig {
   final String modelPath;
   final int maxTokens;
   final List<int>? supportedLoraRanks;
   final PreferredBackend? preferredBackend;
   final int? maxNumImages;
 
-  InferenceModelConfig({
+  const ModelConfig({
     required this.modelPath,
     required this.maxTokens,
     this.supportedLoraRanks,
@@ -28,7 +33,7 @@ class InferenceModelConfig {
       map['loraRanks'] = supportedLoraRanks;
     }
     if (preferredBackend != null) {
-      map['preferredBackend'] = preferredBackend!.index;
+      map['preferredBackend'] = preferredBackend?.value;
     }
     if (maxNumImages != null) {
       map['maxNumImages'] = maxNumImages;
@@ -38,7 +43,7 @@ class InferenceModelConfig {
 }
 
 /// Configuration for the inference session
-class InferenceSessionConfig {
+class SessionConfig {
   final double temperature;
   final int randomSeed;
   final int topK;
@@ -46,7 +51,7 @@ class InferenceSessionConfig {
   final String? loraPath;
   final bool? enableVisionModality;
 
-  InferenceSessionConfig({
+  const SessionConfig({
     this.temperature = 0.8,
     this.randomSeed = 1,
     this.topK = 40,
@@ -71,5 +76,20 @@ class InferenceSessionConfig {
       map['enableVisionModality'] = enableVisionModality;
     }
     return map;
+  }
+}
+
+/// Response event from async generation
+class GenerationEvent {
+  final String partialResult;
+  final bool done;
+
+  const GenerationEvent({required this.partialResult, required this.done});
+
+  factory GenerationEvent.fromMap(Map<String, dynamic> map) {
+    return GenerationEvent(
+      partialResult: map['partialResult'] as String? ?? '',
+      done: map['done'] as bool? ?? false,
+    );
   }
 }

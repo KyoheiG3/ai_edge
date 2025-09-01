@@ -1,10 +1,10 @@
 import 'dart:async';
-import 'package:flutter/services.dart';
-import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+import 'dart:typed_data';
 
-part 'model_config.dart';
-part 'ai_edge_platform_interface.dart';
-part 'ai_edge_method_channel.dart';
+import 'ai_edge_platform_interface.dart';
+import 'types.dart';
+
+export 'types.dart';
 
 /// The main class for using the AiEdge plugin.
 class AiEdge {
@@ -16,41 +16,36 @@ class AiEdge {
   static AiEdge get instance => _instance;
 
   /// Creates a new model with the given configuration
-  Future<void> createModel({
+  Future<void> createModel(ModelConfig config) {
+    return AiEdgePlatform.instance.createModel(config);
+  }
+
+  /// Creates a new session with the given configuration
+  Future<void> createSession(SessionConfig config) {
+    return AiEdgePlatform.instance.createSession(config);
+  }
+
+  /// Initialize the AI Edge with model and session configurations
+  /// This is a convenience method that calls createModel and createSession
+  Future<void> initialize({
     required String modelPath,
     required int maxTokens,
     List<int>? supportedLoraRanks,
     PreferredBackend? preferredBackend,
     int? maxNumImages,
-  }) {
-    final config = InferenceModelConfig(
+    SessionConfig? sessionConfig,
+  }) async {
+    // Create model
+    await createModel(ModelConfig(
       modelPath: modelPath,
       maxTokens: maxTokens,
       supportedLoraRanks: supportedLoraRanks,
       preferredBackend: preferredBackend,
       maxNumImages: maxNumImages,
-    );
-    return AiEdgePlatform.instance.createModel(config);
-  }
+    ));
 
-  /// Creates a new session with the given configuration
-  Future<void> createSession({
-    double temperature = 0.8,
-    int randomSeed = 1,
-    int topK = 40,
-    double? topP,
-    String? loraPath,
-    bool? enableVisionModality,
-  }) {
-    final config = InferenceSessionConfig(
-      temperature: temperature,
-      randomSeed: randomSeed,
-      topK: topK,
-      topP: topP,
-      loraPath: loraPath,
-      enableVisionModality: enableVisionModality,
-    );
-    return AiEdgePlatform.instance.createSession(config);
+    // Create session with default or provided config
+    await createSession(sessionConfig ?? const SessionConfig());
   }
 
   /// Closes both model and session
@@ -74,9 +69,9 @@ class AiEdge {
   }
 
   /// Generates an async response and returns a stream of partial results
-  Stream<Map<String, dynamic>> generateResponseAsync([String? prompt]) {
+  Stream<GenerationEvent> generateResponseAsync([String? prompt]) {
     // First get the stream (which sets up the event listener)
-    final controller = StreamController<Map<String, dynamic>>.broadcast()
+    final controller = StreamController<GenerationEvent>.broadcast()
       ..onListen = () {
         // When the stream is listened to, we can start the async generation
         AiEdgePlatform.instance.generateResponseAsync(prompt);
