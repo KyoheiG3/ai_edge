@@ -84,18 +84,6 @@ final class InferenceSession {
         if let prompt {
             try session.addQueryChunk(inputText: prompt)
         }
-
-        return AsyncThrowingStream { continuation in
-            Task {
-                do {
-                    for try await partialResult in session.generateResponseAsync() {
-                        continuation.yield(partialResult)
-                    }
-                    continuation.finish()
-                } catch {
-                    continuation.finish(throwing: error)
-                }
-            }
-        }
+        return session.generateResponseAsync()
     }
 }
