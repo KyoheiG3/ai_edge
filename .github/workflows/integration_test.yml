@@ -40,10 +40,20 @@ jobs:
           path: ~/models/${{ steps.get-model-info.outputs.file }}
           key: model-gemma-3n-e2b-${{ steps.get-model-info.outputs.sha256 }}
 
+      - name: Setup Python for model download
+        if: steps.cache-model.outputs.cache-hit != 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install huggingface-hub
+        if: steps.cache-model.outputs.cache-hit != 'true'
+        run: pip install huggingface-hub
+      
       - name: Download Model if not cached
         if: steps.cache-model.outputs.cache-hit != 'true'
         run: |
-          # Use the download script (it has the SHA256 built-in)
+          # Use the download script with Python/huggingface-hub
           ./scripts/download_test_model.sh ~/models
 
       - name: Start iOS Simulator
@@ -131,10 +141,20 @@ jobs:
           path: ~/models/${{ steps.get-model-info.outputs.file }}
           key: model-gemma-3n-e2b-${{ steps.get-model-info.outputs.sha256 }}
 
+      - name: Setup Python for model download
+        if: steps.cache-model.outputs.cache-hit != 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install huggingface-hub
+        if: steps.cache-model.outputs.cache-hit != 'true'
+        run: pip install huggingface-hub
+      
       - name: Download Model if not cached
         if: steps.cache-model.outputs.cache-hit != 'true'
         run: |
-          # Use the download script (it has the SHA256 built-in)
+          # Use the download script with Python/huggingface-hub
           ./scripts/download_test_model.sh ~/models
 
       - name: Enable KVM

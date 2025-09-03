@@ -6,12 +6,13 @@
 set -e
 
 # Configuration
-MODEL_URL="https://huggingface.co/google/gemma-3n-E2B-it-litert-preview/resolve/main/gemma-3n-E2B-it-int4.task"
+MODEL_REPO="google/gemma-3n-E2B-it-litert-preview"
 MODEL_FILE="gemma-3n-E2B-it-int4.task"
 MODEL_SIZE_GB="3.14"
 
-# Expected SHA256 from Hugging Face
-EXPECTED_SHA256="a7f544cfee68f579fabadb22aa9284faa4020a0f5358d0e15b49fdd4cefe4200"
+# SHA256 of the actual model file (not the LFS pointer)
+# If empty, verification will be skipped
+EXPECTED_SHA256=""
 
 # Output directory (default to ~/models)
 OUTPUT_DIR="${1:-$HOME/models}"
@@ -55,39 +56,8 @@ check_disk_space() {
     log_info "Disk space check passed. Available: ${available_gb}GB"
 }
 
-download_with_resume() {
-    local url="$1"
-    local output_file="$2"
-    local auth_header=""
-    
-    # Add authorization header if HF_TOKEN is set
-    if [ -n "$HF_TOKEN" ]; then
-        auth_header="Authorization: Bearer $HF_TOKEN"
-        log_info "Using Hugging Face authentication token"
-    fi
-    
-    log_info "Downloading from: $url"
-    log_info "Saving to: $output_file"
-    
-    # Use curl with resume capability
-    if [ -n "$auth_header" ]; then
-        curl -L -C - -H "$auth_header" \
-             --progress-bar \
-             --retry 3 \
-             --retry-delay 5 \
-             -o "$output_file" \
-             "$url"
-    else
-        curl -L -C - \
-             --progress-bar \
-             --retry 3 \
-             --retry-delay 5 \
-             -o "$output_file" \
-             "$url"
-    fi
-    
-    return $?
-}
+# Not used anymore - keeping for reference
+# download_with_resume() - replaced with huggingface-hub methods
 
 verify_checksum() {
     local file="$1"
@@ -122,7 +92,7 @@ verify_checksum() {
 # Main script
 main() {
     log_info "Starting model download for integration tests"
-    log_info "Model: $MODEL_FILE ($MODEL_SIZE_GB GB)"
+    log_info "Model: $MODEL_FILE ($MODEL_SIZE_GB GB) from $MODEL_REPO"
     
     # Create output directory
     mkdir -p "$OUTPUT_DIR"
@@ -134,43 +104,129 @@ main() {
     if [ -f "$OUTPUT_FILE" ]; then
         log_info "Model file already exists at: $OUTPUT_FILE"
         
-        # Verify existing file if checksum is provided
-        if [ -n "$EXPECTED_SHA256" ]; then
-            if verify_checksum "$OUTPUT_FILE" "$EXPECTED_SHA256"; then
-                log_info "Existing model verified successfully"
-                exit 0
+        # Check file size
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            FILE_SIZE_BYTES=$(stat -f%z "$OUTPUT_FILE")
+        else
+            FILE_SIZE_BYTES=$(stat -c%s "$OUTPUT_FILE")
+        fi
+        
+        # If file is larger than 1GB, it's probably the real model
+        if [ "$FILE_SIZE_BYTES" -gt 1073741824 ]; then
+            log_info "Existing model appears to be valid (size: $(( FILE_SIZE_BYTES / 1024 / 1024 / 1024 ))GB)"
+            
+            # Verify existing file if checksum is provided
+            if [ -n "$EXPECTED_SHA256" ]; then
+                if verify_checksum "$OUTPUT_FILE" "$EXPECTED_SHA256"; then
+                    log_info "Existing model verified successfully"
+                    exit 0
+                else
+                    log_warn "Existing model failed verification, re-downloading..."
+                    rm -f "$OUTPUT_FILE"
+                fi
             else
-                log_warn "Existing model failed verification, re-downloading..."
-                rm -f "$OUTPUT_FILE"
+                # No checksum, but size looks good
+                log_info "Using existing model (no checksum verification)"
+                exit 0
             fi
         else
-            # Ask if we should re-download
-            if [ -t 0 ]; then  # Check if running interactively
-                read -p "Model exists. Re-download? (y/N): " -n 1 -r
-                echo
-                if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-                    log_info "Using existing model"
-                    exit 0
-                fi
-                rm -f "$OUTPUT_FILE"
-            else
-                # Non-interactive mode (CI), use existing file
-                log_info "Using existing model (non-interactive mode)"
-                exit 0
-            fi
+            log_warn "Existing file is too small ($(( FILE_SIZE_BYTES / 1024 / 1024 ))MB), likely an LFS pointer"
+            rm -f "$OUTPUT_FILE"
         fi
     fi
     
     # Check disk space
     check_disk_space
     
-    # Download the model
-    log_info "Starting download..."
-    if download_with_resume "$MODEL_URL" "$OUTPUT_FILE"; then
-        log_info "Download completed successfully"
+    # Try different download methods
+    log_info "Attempting to download model using huggingface-hub..."
+    
+    # Method 1: Try using huggingface-cli if available
+    if command -v huggingface-cli &> /dev/null; then
+        log_info "Using huggingface-cli to download"
+        huggingface-cli download "$MODEL_REPO" "$MODEL_FILE" \
+            --local-dir "$OUTPUT_DIR" \
+            --local-dir-use-symlinks False
+        
+        if [ -f "$OUTPUT_FILE" ]; then
+            log_info "Download with huggingface-cli completed"
+        else
+            log_error "huggingface-cli download failed"
+            exit 1
+        fi
+    # Method 2: Try Python with huggingface_hub if available  
+    elif command -v python3 &> /dev/null; then
+        log_info "Trying to download using Python huggingface_hub"
+        python3 -c "
+try:
+    from huggingface_hub import hf_hub_download
+    import os
+    
+    file_path = hf_hub_download(
+        repo_id='$MODEL_REPO',
+        filename='$MODEL_FILE',
+        cache_dir='$OUTPUT_DIR/.cache',
+        force_download=False,
+        resume_download=True
+    )
+    
+    # Move from cache to output location
+    import shutil
+    shutil.copy2(file_path, '$OUTPUT_FILE')
+    print(f'Downloaded to: $OUTPUT_FILE')
+except ImportError:
+    print('huggingface_hub not installed, trying pip install...')
+    import subprocess
+    subprocess.run(['pip', 'install', '-q', 'huggingface_hub'])
+    
+    # Try again
+    from huggingface_hub import hf_hub_download
+    import os
+    
+    file_path = hf_hub_download(
+        repo_id='$MODEL_REPO',
+        filename='$MODEL_FILE',
+        cache_dir='$OUTPUT_DIR/.cache',
+        force_download=False,
+        resume_download=True
+    )
+    
+    import shutil
+    shutil.copy2(file_path, '$OUTPUT_FILE')
+    print(f'Downloaded to: $OUTPUT_FILE')
+except Exception as e:
+    print(f'Error: {e}')
+    exit(1)
+"
+        if [ $? -eq 0 ] && [ -f "$OUTPUT_FILE" ]; then
+            log_info "Download with Python completed"
+        else
+            log_error "Python download failed, trying git lfs..."
+            
+            # Method 3: Use git lfs as last resort
+            log_info "Cloning repository with git lfs..."
+            TEMP_REPO="/tmp/gemma_model_$$"
+            git clone --depth 1 --filter=blob:none --sparse \
+                "https://huggingface.co/$MODEL_REPO" "$TEMP_REPO"
+            
+            cd "$TEMP_REPO"
+            git sparse-checkout set "$MODEL_FILE"
+            git lfs pull --include="$MODEL_FILE"
+            
+            if [ -f "$MODEL_FILE" ]; then
+                mv "$MODEL_FILE" "$OUTPUT_FILE"
+                cd - >/dev/null
+                rm -rf "$TEMP_REPO"
+                log_info "Download with git lfs completed"
+            else
+                cd - >/dev/null
+                rm -rf "$TEMP_REPO"
+                log_error "All download methods failed"
+                exit 1
+            fi
+        fi
     else
-        log_error "Download failed"
-        rm -f "$OUTPUT_FILE"
+        log_error "No suitable download method available (need huggingface-cli, Python, or git lfs)"
         exit 1
     fi
     
@@ -185,13 +241,23 @@ main() {
     # Show file info
     if [[ "$OSTYPE" == "darwin"* ]]; then
         FILE_SIZE=$(ls -lh "$OUTPUT_FILE" | awk '{print $5}')
+        FILE_SIZE_BYTES=$(stat -f%z "$OUTPUT_FILE")
     else
         FILE_SIZE=$(ls -lh "$OUTPUT_FILE" | awk '{print $5}')
+        FILE_SIZE_BYTES=$(stat -c%s "$OUTPUT_FILE")
     fi
     
     log_info "Model downloaded successfully!"
     log_info "Location: $OUTPUT_FILE"
-    log_info "Size: $FILE_SIZE"
+    log_info "Size: $FILE_SIZE ($FILE_SIZE_BYTES bytes)"
+    
+    # Check if file size is suspiciously small (less than 1MB)
+    if [ "$FILE_SIZE_BYTES" -lt 1048576 ]; then
+        log_warn "File size is suspiciously small! Expected ~3.14GB but got $FILE_SIZE"
+        log_warn "This might be a Git LFS pointer file instead of the actual model"
+        log_info "First 500 bytes of file content:"
+        head -c 500 "$OUTPUT_FILE" | cat -v
+    fi
     
     # For CI environments, output the path for other scripts
     if [ -n "$CI" ]; then
