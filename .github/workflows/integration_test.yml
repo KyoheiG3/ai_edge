@@ -98,11 +98,21 @@ jobs:
         run: |
           # Get the booted device ID
           DEVICE_ID=$(xcrun simctl list devices | grep "Booted" | head -1 | grep -oE '[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}')
-
-          # Create app data directory structure (will be created when app runs)
-          # For now, we'll copy after the app starts
-          echo "Model will be copied during test setup"
           echo "device_id=$DEVICE_ID" >> $GITHUB_OUTPUT
+          
+          # Copy model to simulator's shared container (accessible without app installation)
+          SIMULATOR_ROOT=~/Library/Developer/CoreSimulator/Devices/$DEVICE_ID
+          
+          # Create a temporary shared directory in simulator
+          SHARED_DIR=$SIMULATOR_ROOT/data/tmp
+          mkdir -p $SHARED_DIR
+          
+          # Copy model to simulator's tmp directory
+          cp ~/models/${{ steps.get-model-info.outputs.file }} $SHARED_DIR/
+          echo "Model copied to simulator: $SHARED_DIR/${{ steps.get-model-info.outputs.file }}"
+          
+          # Export the simulator path for tests
+          echo "simulator_model_path=/tmp/${{ steps.get-model-info.outputs.file }}" >> $GITHUB_OUTPUT
 
       - name: Install Dependencies
         run: |
@@ -111,26 +121,27 @@ jobs:
 
       - name: Run Integration Tests
         env:
-          TEST_MODEL_PATH: ${{ github.workspace }}/../models/${{ steps.get-model-info.outputs.file }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           cd example
 
-          # Debug: Check if model exists and show full path
-          echo "TEST_MODEL_PATH: $TEST_MODEL_PATH"
-          ls -la ~/models/ || true
+          # Use the simulator's tmp path for iOS
+          export TEST_MODEL_PATH=${{ steps.get-device.outputs.simulator_model_path }}
+          echo "TEST_MODEL_PATH for simulator: $TEST_MODEL_PATH"
           
-          # Convert to absolute path
-          export TEST_MODEL_PATH=$(realpath ~/models/${{ steps.get-model-info.outputs.file }})
-          echo "Absolute TEST_MODEL_PATH: $TEST_MODEL_PATH"
-          
-          # Verify file exists
-          if [ ! -f "$TEST_MODEL_PATH" ]; then
-            echo "ERROR: Model file not found at $TEST_MODEL_PATH"
+          # Also verify host file exists
+          HOST_MODEL_PATH=$(realpath ~/models/${{ steps.get-model-info.outputs.file }})
+          echo "Host model path: $HOST_MODEL_PATH"
+          if [ ! -f "$HOST_MODEL_PATH" ]; then
+            echo "ERROR: Model file not found on host at $HOST_MODEL_PATH"
             exit 1
           fi
 
-          # Run integration tests
+          # Run integration tests with environment variables
+          # The test will access the file from within the simulator
+          TEST_MODEL_PATH="$TEST_MODEL_PATH" \
+          HF_TOKEN="${{ secrets.HF_TOKEN }}" \
+          CI=true \
           flutter test integration_test \
             --timeout 30m \
             --device-id=${{ steps.get-device.outputs.device_id }}
