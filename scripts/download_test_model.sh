@@ -154,16 +154,38 @@ main() {
         # Try new hf command first, fallback to huggingface-cli
         if command -v hf &> /dev/null; then
             log_info "Using hf download command"
-            hf download "$MODEL_REPO" "$MODEL_FILE" \
-                --local-dir "$OUTPUT_DIR" \
-                --local-dir-use-symlinks False \
-                --token "$HF_TOKEN"
+            # hf download doesn't support --local-dir, downloads to cache then we move it
+            # Run the command and capture output
+            TEMP_OUTPUT="/tmp/hf_download_output_$$"
+            HF_TOKEN="$HF_TOKEN" hf download "$MODEL_REPO" "$MODEL_FILE" > "$TEMP_OUTPUT" 2>&1
+            HF_EXIT_CODE=$?
+            
+            if [ $HF_EXIT_CODE -eq 0 ]; then
+                # Get the last line which should be the file path
+                DOWNLOADED_PATH=$(tail -1 "$TEMP_OUTPUT")
+                if [ -f "$DOWNLOADED_PATH" ]; then
+                    cp "$DOWNLOADED_PATH" "$OUTPUT_FILE"
+                    log_info "Copied from cache: $DOWNLOADED_PATH to $OUTPUT_FILE"
+                else
+                    log_error "hf download succeeded but file not found at: $DOWNLOADED_PATH"
+                    log_info "Full output:"
+                    cat "$TEMP_OUTPUT"
+                    rm -f "$TEMP_OUTPUT"
+                    exit 1
+                fi
+            else
+                log_error "hf download failed with exit code: $HF_EXIT_CODE"
+                log_info "Error output:"
+                cat "$TEMP_OUTPUT"
+                rm -f "$TEMP_OUTPUT"
+                exit 1
+            fi
+            rm -f "$TEMP_OUTPUT"
         else
             log_info "Using huggingface-cli to download"
-            huggingface-cli download "$MODEL_REPO" "$MODEL_FILE" \
+            HF_TOKEN="$HF_TOKEN" huggingface-cli download "$MODEL_REPO" "$MODEL_FILE" \
                 --local-dir "$OUTPUT_DIR" \
-                --local-dir-use-symlinks False \
-                --token "$HF_TOKEN"
+                --local-dir-use-symlinks False
         fi
         
         if [ -f "$OUTPUT_FILE" ]; then
