@@ -52,8 +52,11 @@ jobs:
       
       - name: Download Model if not cached
         if: steps.cache-model.outputs.cache-hit != 'true'
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           # Use the download script with Python/huggingface-hub
+          # HF_TOKEN must be set as a GitHub secret with access to the Gemma model
           ./scripts/download_test_model.sh ~/models
 
       - name: Start iOS Simulator
@@ -153,8 +156,11 @@ jobs:
       
       - name: Download Model if not cached
         if: steps.cache-model.outputs.cache-hit != 'true'
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           # Use the download script with Python/huggingface-hub
+          # HF_TOKEN must be set as a GitHub secret with access to the Gemma model
           ./scripts/download_test_model.sh ~/models
 
       - name: Enable KVM

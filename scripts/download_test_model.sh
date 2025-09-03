@@ -142,11 +142,29 @@ main() {
     log_info "Attempting to download model using huggingface-hub..."
     
     # Method 1: Try using huggingface-cli if available
-    if command -v huggingface-cli &> /dev/null; then
-        log_info "Using huggingface-cli to download"
-        huggingface-cli download "$MODEL_REPO" "$MODEL_FILE" \
-            --local-dir "$OUTPUT_DIR" \
-            --local-dir-use-symlinks False
+    if command -v huggingface-cli &> /dev/null || command -v hf &> /dev/null; then
+        # Check if HF_TOKEN is set
+        if [ -z "$HF_TOKEN" ]; then
+            log_error "HF_TOKEN environment variable is required for accessing Gemma models"
+            log_info "Please set HF_TOKEN with a Hugging Face token that has access to the Gemma model"
+            log_info "You can get a token from: https://huggingface.co/settings/tokens"
+            exit 1
+        fi
+        
+        # Try new hf command first, fallback to huggingface-cli
+        if command -v hf &> /dev/null; then
+            log_info "Using hf download command"
+            hf download "$MODEL_REPO" "$MODEL_FILE" \
+                --local-dir "$OUTPUT_DIR" \
+                --local-dir-use-symlinks False \
+                --token "$HF_TOKEN"
+        else
+            log_info "Using huggingface-cli to download"
+            huggingface-cli download "$MODEL_REPO" "$MODEL_FILE" \
+                --local-dir "$OUTPUT_DIR" \
+                --local-dir-use-symlinks False \
+                --token "$HF_TOKEN"
+        fi
         
         if [ -f "$OUTPUT_FILE" ]; then
             log_info "Download with huggingface-cli completed"
@@ -156,18 +174,29 @@ main() {
         fi
     # Method 2: Try Python with huggingface_hub if available  
     elif command -v python3 &> /dev/null; then
+        # Check if HF_TOKEN is set
+        if [ -z "$HF_TOKEN" ]; then
+            log_error "HF_TOKEN environment variable is required for accessing Gemma models"
+            log_info "Please set HF_TOKEN with a Hugging Face token that has access to the Gemma model"
+            log_info "You can get a token from: https://huggingface.co/settings/tokens"
+            exit 1
+        fi
+        
         log_info "Trying to download using Python huggingface_hub"
         python3 -c "
+import os
+os.environ['HF_TOKEN'] = '$HF_TOKEN'
+
 try:
     from huggingface_hub import hf_hub_download
-    import os
     
     file_path = hf_hub_download(
         repo_id='$MODEL_REPO',
         filename='$MODEL_FILE',
         cache_dir='$OUTPUT_DIR/.cache',
         force_download=False,
-        resume_download=True
+        resume_download=True,
+        token='$HF_TOKEN'
     )
     
     # Move from cache to output location
@@ -181,14 +210,14 @@ except ImportError:
     
     # Try again
     from huggingface_hub import hf_hub_download
-    import os
     
     file_path = hf_hub_download(
         repo_id='$MODEL_REPO',
         filename='$MODEL_FILE',
         cache_dir='$OUTPUT_DIR/.cache',
         force_download=False,
-        resume_download=True
+        resume_download=True,
+        token='$HF_TOKEN'
     )
     
     import shutil
