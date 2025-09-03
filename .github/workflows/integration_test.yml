@@ -52,6 +52,7 @@ jobs:
 
           flutter test integration_test \
             --timeout 10m \
+            --fail-fast \
             --device-id=${{ steps.ios-sim.outputs.device_id }} \
             --dart-define=TEST_MODEL_PATH="$TEST_MODEL_PATH" \
             --dart-define=CI=true
@@ -144,6 +145,7 @@ jobs:
             export TEST_MODEL_PATH=/sdcard/Download/${{ steps.model.outputs.file }}
             flutter test integration_test \
               --timeout 10m \
+              --fail-fast \
               --dart-define=TEST_MODEL_PATH="$TEST_MODEL_PATH" \
               --dart-define=CI=true
 

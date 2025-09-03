@@ -71,6 +71,7 @@ echo
 flutter test integration_test \
   --device-id emulator-5554 \
   --timeout 5m \
+  --fail-fast \
   --dart-define=TEST_MODEL_PATH="/data/local/tmp/$MODEL_FILE" \
   --dart-define=HF_TOKEN="$HF_TOKEN" \
   --dart-define=CI=true
