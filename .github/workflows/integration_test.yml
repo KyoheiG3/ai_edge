@@ -7,12 +7,9 @@ on:
     branches: [main]
   workflow_dispatch:
 
-# Cancel in-progress runs when a new run is triggered
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
-
-# Model configuration is defined in scripts/download_test_model.sh
 
 jobs:
   test-ios:
@@ -28,95 +25,19 @@ jobs:
           install: true
           cache: true
 
-      - name: Get model info from script
-        id: get-model-info
-        run: |
-          FILE=$(grep "^MODEL_FILE=" scripts/download_test_model.sh | cut -d'"' -f2)
-          echo "file=$FILE" >> $GITHUB_OUTPUT
-          echo "Model File: $FILE"
-          # Use file size as part of cache key since we don't have SHA256 yet
-          echo "cache_key=gemma-3n-e2b-3.14gb-v1" >> $GITHUB_OUTPUT
-
-      - name: Cache Model File
-        id: cache-model
-        uses: actions/cache@v4
+      - name: Setup Test Model
+        id: model
+        uses: ./.github/actions/setup-model
         with:
-          path: ~/models/${{ steps.get-model-info.outputs.file }}
-          key: model-${{ steps.get-model-info.outputs.cache_key }}
-
-      - name: Setup Python for model download
-        if: steps.cache-model.outputs.cache-hit != 'true'
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      
-      - name: Install huggingface-hub
-        if: steps.cache-model.outputs.cache-hit != 'true'
-        run: pip install huggingface-hub
-      
-      - name: Download Model if not cached
-        if: steps.cache-model.outputs.cache-hit != 'true'
-        env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: |
-          # Use the download script with Python/huggingface-hub
-          # HF_TOKEN must be set as a GitHub secret with access to the Gemma model
-          ./scripts/download_test_model.sh ~/models
+          hf-token: ${{ secrets.HF_TOKEN }}
 
       - name: Start iOS Simulator
+        id: ios-sim
         run: |
-          # List available devices
-          xcrun simctl list devices
-
-          # Try to find an existing iPhone 16 Pro, or use the first available iPhone
-          DEVICE_ID=$(xcrun simctl list devices | grep "iPhone 16 Pro" | head -1 | grep -oE '[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}' | head -1)
-          
-          # If no iPhone 16 Pro, try iPhone 15 Pro
-          if [ -z "$DEVICE_ID" ]; then
-            DEVICE_ID=$(xcrun simctl list devices | grep "iPhone 15 Pro" | head -1 | grep -oE '[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}' | head -1)
-          fi
-          
-          # If still no device, use any available iPhone
-          if [ -z "$DEVICE_ID" ]; then
-            DEVICE_ID=$(xcrun simctl list devices | grep "iPhone" | grep -v "unavailable" | head -1 | grep -oE '[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}' | head -1)
-          fi
-          
-          if [ -z "$DEVICE_ID" ]; then
-            echo "No suitable iPhone simulator found. Available devices:"
-            xcrun simctl list devices
-            exit 1
-          fi
-
-          echo "Device ID: $DEVICE_ID"
+          DEVICE_ID=$(xcrun simctl list devices | grep "iPhone 16 Pro" | head -1 | grep -oE '[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}')
           xcrun simctl boot $DEVICE_ID || true
-
-          # Wait for simulator to be ready
           xcrun simctl bootstatus $DEVICE_ID
-
-      - name: Setup Model Path
-        id: get-device
-        run: |
-          # Get the booted device ID
-          DEVICE_ID=$(xcrun simctl list devices | grep "Booted" | head -1 | grep -oE '[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}')
           echo "device_id=$DEVICE_ID" >> $GITHUB_OUTPUT
-          
-          # Debug: Show simulator info
-          echo "Simulator ID: $DEVICE_ID"
-          xcrun simctl list devices | grep "Booted"
-          
-          # Verify the host file exists and get absolute path
-          HOST_MODEL_PATH=$(realpath ~/models/${{ steps.get-model-info.outputs.file }})
-          if [ ! -f "$HOST_MODEL_PATH" ]; then
-            echo "ERROR: Model file not found at $HOST_MODEL_PATH"
-            exit 1
-          fi
-          
-          echo "Model file exists at: $HOST_MODEL_PATH"
-          ls -lh "$HOST_MODEL_PATH"
-          
-          # For iOS tests, use the host path directly
-          # The simulator can access host filesystem paths
-          echo "host_model_path=$HOST_MODEL_PATH" >> $GITHUB_OUTPUT
 
       - name: Install Dependencies
         run: |
@@ -124,33 +45,15 @@ jobs:
           flutter pub get
 
       - name: Run Integration Tests
-        env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           cd example
+          export TEST_MODEL_PATH=${{ steps.model.outputs.path }}
+          [ ! -f "$TEST_MODEL_PATH" ] && exit 1
 
-          # Use the host path directly for iOS
-          # The simulator can access host filesystem
-          export TEST_MODEL_PATH=${{ steps.get-device.outputs.host_model_path }}
-          echo "TEST_MODEL_PATH (host path): $TEST_MODEL_PATH"
-          
-          # Verify file exists
-          if [ ! -f "$TEST_MODEL_PATH" ]; then
-            echo "ERROR: Model file not found at $TEST_MODEL_PATH"
-            exit 1
-          fi
-          
-          echo "Model file size: $(ls -lh $TEST_MODEL_PATH | awk '{print $5}')"
-
-          # Run integration tests with environment variables
-          # Using dart-define to pass variables directly to the test
-          # Set timeout to 2m per test file
           flutter test integration_test \
-            --timeout 2m \
-            --test-randomize-ordering-seed random \
-            --device-id=${{ steps.get-device.outputs.device_id }} \
+            --timeout 10m \
+            --device-id=${{ steps.ios-sim.outputs.device_id }} \
             --dart-define=TEST_MODEL_PATH="$TEST_MODEL_PATH" \
-            --dart-define=HF_TOKEN="${{ secrets.HF_TOKEN }}" \
             --dart-define=CI=true
 
       - name: Upload Test Results
@@ -164,11 +67,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
-    strategy:
-      matrix:
-        api-level: [33]
-        arch: [x86_64]
-
     steps:
       - uses: actions/checkout@v4
 
@@ -178,40 +76,11 @@ jobs:
           install: true
           cache: true
 
-      - name: Get model info from script
-        id: get-model-info
-        run: |
-          FILE=$(grep "^MODEL_FILE=" scripts/download_test_model.sh | cut -d'"' -f2)
-          echo "file=$FILE" >> $GITHUB_OUTPUT
-          echo "Model File: $FILE"
-          # Use file size as part of cache key since we don't have SHA256 yet
-          echo "cache_key=gemma-3n-e2b-3.14gb-v1" >> $GITHUB_OUTPUT
-
-      - name: Cache Model File
-        id: cache-model
-        uses: actions/cache@v4
+      - name: Setup Test Model
+        id: model
+        uses: ./.github/actions/setup-model
         with:
-          path: ~/models/${{ steps.get-model-info.outputs.file }}
-          key: model-${{ steps.get-model-info.outputs.cache_key }}
-
-      - name: Setup Python for model download
-        if: steps.cache-model.outputs.cache-hit != 'true'
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      
-      - name: Install huggingface-hub
-        if: steps.cache-model.outputs.cache-hit != 'true'
-        run: pip install huggingface-hub
-      
-      - name: Download Model if not cached
-        if: steps.cache-model.outputs.cache-hit != 'true'
-        env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: |
-          # Use the download script with Python/huggingface-hub
-          # HF_TOKEN must be set as a GitHub secret with access to the Gemma model
-          ./scripts/download_test_model.sh ~/models
+          hf-token: ${{ secrets.HF_TOKEN }}
 
       - name: Enable KVM
         run: |
@@ -226,27 +95,22 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-${{ matrix.api-level }}-${{ matrix.arch }}
+          key: avd-33-x86_64
 
       - name: Free up disk space
         run: |
-          # Free up disk space on Ubuntu runner
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /opt/ghc
-          sudo rm -rf "/usr/local/share/boost"
-          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-          df -h
-      
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost "$AGENT_TOOLSDIRECTORY"
+
       - name: Create AVD and generate snapshot for caching
         if: steps.avd-cache.outputs.cache-hit != 'true'
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: ${{ matrix.api-level }}
-          arch: ${{ matrix.arch }}
+          api-level: 33
+          arch: x86_64
           force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -memory 2048 -partition-size 4096
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -memory 8192 -partition-size 8192
           disable-animations: false
-          disk-size: 8192M
+          disk-size: 10240M
           script: echo "Generated AVD snapshot for caching."
 
       - name: Install Dependencies
@@ -257,45 +121,35 @@ jobs:
       - name: Run Integration Tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: ${{ matrix.api-level }}
-          arch: ${{ matrix.arch }}
+          api-level: 33
+          arch: x86_64
           force-avd-creation: false
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -memory 2048 -partition-size 4096
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -memory 8192 -partition-size 8192
           disable-animations: true
           disk-size: 8192M
           script: |
-            # Wait for emulator to be ready
             adb wait-for-device
             adb shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done;'
 
-            # Use a temporary location first (public storage)
             adb shell mkdir -p /sdcard/Download/
-            
-            # Push model to public location first
-            echo "Pushing model to emulator..."
-            adb push ~/models/${{ steps.get-model-info.outputs.file }} /sdcard/Download/
-            
-            # Verify model was copied
-            adb shell ls -la /sdcard/Download/${{ steps.get-model-info.outputs.file }}
+            adb push ${{ steps.model.outputs.path }} /sdcard/Download/
 
-            # Build and install the app first (this creates the app directory)
-            # Use && to chain commands in same shell
-            cd ${{ github.workspace }}/example && pwd && ls -la && flutter build apk --debug && adb install -r build/app/outputs/flutter-apk/app-debug.apk
-            
-            # Give the app storage permissions
+            cd ${{ github.workspace }}/example
+            flutter build apk --debug
+            adb install -r build/app/outputs/flutter-apk/app-debug.apk
+
             adb shell pm grant jp.kyoheig3.ai_edge_example android.permission.READ_EXTERNAL_STORAGE || true
             adb shell pm grant jp.kyoheig3.ai_edge_example android.permission.WRITE_EXTERNAL_STORAGE || true
-            
-            # Now move the model to app directory (alternative: keep in Download)
-            adb shell mkdir -p /sdcard/Android/data/jp.kyoheig3.ai_edge_example/files/
-            adb shell cp /sdcard/Download/${{ steps.get-model-info.outputs.file }} /sdcard/Android/data/jp.kyoheig3.ai_edge_example/files/ || true
-            
-            # Run integration tests with model in Download folder (more reliable)
-            cd ${{ github.workspace }}/example && export TEST_MODEL_PATH=/sdcard/Download/${{ steps.get-model-info.outputs.file }} && flutter test integration_test --timeout 10m
+
+            export TEST_MODEL_PATH=/sdcard/Download/${{ steps.model.outputs.file }}
+            flutter test integration_test \
+              --timeout 10m \
+              --dart-define=TEST_MODEL_PATH="$TEST_MODEL_PATH" \
+              --dart-define=CI=true
 
       - name: Upload Test Results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: android-test-results-${{ matrix.api-level }}
+          name: android-test-results
           path: example/test_results/

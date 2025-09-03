@@ -1,0 +1,43 @@
+name: 'Setup Test Model'
+description: 'Setup and cache the test model for integration tests'
+inputs:
+  hf-token:
+    description: 'Hugging Face access token'
+    required: true
+outputs:
+  file:
+    description: 'Model filename'
+    value: ${{ steps.model-info.outputs.file }}
+  path:
+    description: 'Full path to the model file'
+    value: ${{ steps.model-info.outputs.path }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup model info
+      id: model-info
+      shell: bash
+      run: |
+        source ${{ github.workspace }}/.github/workflows/model.env
+        echo "file=$MODEL_FILE" >> $GITHUB_OUTPUT
+        echo "path=$HOME/models/$MODEL_FILE" >> $GITHUB_OUTPUT
+
+    - name: Cache Model File
+      id: cache-model
+      uses: actions/cache@v4
+      with:
+        path: ~/models/${{ steps.model-info.outputs.file }}
+        key: model-gemma-3n-e2b-3.14gb-v1
+
+    - name: Install Python dependencies
+      if: steps.cache-model.outputs.cache-hit != 'true'
+      shell: bash
+      run: pip install huggingface-hub
+
+    - name: Download Model if not cached
+      if: steps.cache-model.outputs.cache-hit != 'true'
+      shell: bash
+      env:
+        HF_TOKEN: ${{ inputs.hf-token }}
+      run: ${{ github.workspace }}/scripts/download_test_model.sh ~/models
