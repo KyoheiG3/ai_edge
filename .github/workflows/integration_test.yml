@@ -238,18 +238,31 @@ jobs:
             adb wait-for-device
             adb shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done;'
 
-            # Create app directory
-            adb shell mkdir -p /storage/emulated/0/Android/data/jp.kyoheig3.ai_edge_example/files/
-
-            # Push model to emulator
-            adb push ~/models/${{ steps.get-model-info.outputs.file }} /storage/emulated/0/Android/data/jp.kyoheig3.ai_edge_example/files/
-
+            # Use a temporary location first (public storage)
+            adb shell mkdir -p /sdcard/Download/
+            
+            # Push model to public location first
+            echo "Pushing model to emulator..."
+            adb push ~/models/${{ steps.get-model-info.outputs.file }} /sdcard/Download/
+            
             # Verify model was copied
-            adb shell ls -la /storage/emulated/0/Android/data/jp.kyoheig3.ai_edge_example/files/
+            adb shell ls -la /sdcard/Download/${{ steps.get-model-info.outputs.file }}
 
-            # Run integration tests
+            # Build and install the app first (this creates the app directory)
             cd example
-            export TEST_MODEL_PATH=/storage/emulated/0/Android/data/jp.kyoheig3.ai_edge_example/files/${{ steps.get-model-info.outputs.file }}
+            flutter build apk --debug
+            adb install -r build/app/outputs/flutter-apk/app-debug.apk
+            
+            # Give the app storage permissions
+            adb shell pm grant jp.kyoheig3.ai_edge_example android.permission.READ_EXTERNAL_STORAGE || true
+            adb shell pm grant jp.kyoheig3.ai_edge_example android.permission.WRITE_EXTERNAL_STORAGE || true
+            
+            # Now move the model to app directory (alternative: keep in Download)
+            adb shell mkdir -p /sdcard/Android/data/jp.kyoheig3.ai_edge_example/files/
+            adb shell cp /sdcard/Download/${{ steps.get-model-info.outputs.file }} /sdcard/Android/data/jp.kyoheig3.ai_edge_example/files/ || true
+            
+            # Run integration tests with model in Download folder (more reliable)
+            export TEST_MODEL_PATH=/sdcard/Download/${{ steps.get-model-info.outputs.file }}
             flutter test integration_test --timeout 30m
 
       - name: Upload Test Results

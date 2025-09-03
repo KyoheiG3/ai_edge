@@ -119,14 +119,36 @@ class TestModelHelper {
 
   /// Platform-specific model path helper
   static Future<String> getPlatformModelPath() async {
+    // Check if TEST_MODEL_PATH environment variable is set (for CI)
+    final testModelPath = Platform.environment['TEST_MODEL_PATH'];
+    if (testModelPath != null && testModelPath.isNotEmpty) {
+      debugPrint('Using TEST_MODEL_PATH from environment: $testModelPath');
+      return testModelPath;
+    }
+    
     if (Platform.isIOS) {
       final dir = await getApplicationSupportDirectory();
       return '${dir.path}/${testModel.fileName}';
     } else if (Platform.isAndroid) {
+      // Try multiple locations for Android
+      // 1. Check Download folder (CI environment)
+      final downloadPath = '/sdcard/Download/${testModel.fileName}';
+      if (await File(downloadPath).exists()) {
+        debugPrint('Found model in Download folder: $downloadPath');
+        return downloadPath;
+      }
+      
+      // 2. Check app-specific external storage
       final dir = await getExternalStorageDirectory();
       if (dir != null) {
-        return '${dir.path}/${testModel.fileName}';
+        final appPath = '${dir.path}/${testModel.fileName}';
+        if (await File(appPath).exists()) {
+          debugPrint('Found model in app external storage: $appPath');
+          return appPath;
+        }
       }
+      
+      // 3. Fall back to documents directory
       final docDir = await getApplicationDocumentsDirectory();
       return '${docDir.path}/${testModel.fileName}';
     }
