@@ -10,9 +10,11 @@ MODEL_REPO="google/gemma-3n-E2B-it-litert-preview"
 MODEL_FILE="gemma-3n-E2B-it-int4.task"
 MODEL_SIZE_GB="3.14"
 
-# SHA256 of the actual model file (not the LFS pointer)
-# If empty, verification will be skipped
+# SHA256 of the actual model file (3.14GB file, not the LFS pointer)
+# This is used for cache key in CI and verification
+# NOTE: We'll compute and store this after first successful download
 EXPECTED_SHA256=""
+COMPUTE_SHA256_ON_DOWNLOAD=true
 
 # Output directory (default to ~/models)
 OUTPUT_DIR="${1:-$HOME/models}"
@@ -308,6 +310,19 @@ except Exception as e:
         log_warn "This might be a Git LFS pointer file instead of the actual model"
         log_info "First 500 bytes of file content:"
         head -c 500 "$OUTPUT_FILE" | cat -v
+    fi
+    
+    # Compute SHA256 if requested
+    if [ "$COMPUTE_SHA256_ON_DOWNLOAD" = true ] && [ "$FILE_SIZE_BYTES" -gt 1048576 ]; then
+        log_info "Computing SHA256 checksum of downloaded file..."
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            COMPUTED_SHA256=$(shasum -a 256 "$OUTPUT_FILE" | awk '{print $1}')
+        else
+            COMPUTED_SHA256=$(sha256sum "$OUTPUT_FILE" | awk '{print $1}')
+        fi
+        log_info "SHA256: $COMPUTED_SHA256"
+        log_info "Add this to the script for verification:"
+        log_info "EXPECTED_SHA256=\"$COMPUTED_SHA256\""
     fi
     
     # For CI environments, output the path for other scripts

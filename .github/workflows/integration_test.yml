@@ -31,19 +31,18 @@ jobs:
       - name: Get model info from script
         id: get-model-info
         run: |
-          SHA=$(grep "^EXPECTED_SHA256=" scripts/download_test_model.sh | cut -d'"' -f2)
           FILE=$(grep "^MODEL_FILE=" scripts/download_test_model.sh | cut -d'"' -f2)
-          echo "sha256=$SHA" >> $GITHUB_OUTPUT
           echo "file=$FILE" >> $GITHUB_OUTPUT
-          echo "Model SHA256: $SHA"
           echo "Model File: $FILE"
+          # Use file size as part of cache key since we don't have SHA256 yet
+          echo "cache_key=gemma-3n-e2b-3.14gb-v1" >> $GITHUB_OUTPUT
 
       - name: Cache Model File
         id: cache-model
         uses: actions/cache@v4
         with:
           path: ~/models/${{ steps.get-model-info.outputs.file }}
-          key: model-gemma-3n-e2b-${{ steps.get-model-info.outputs.sha256 }}
+          key: model-${{ steps.get-model-info.outputs.cache_key }}
 
       - name: Setup Python for model download
         if: steps.cache-model.outputs.cache-hit != 'true'
@@ -150,19 +149,18 @@ jobs:
       - name: Get model info from script
         id: get-model-info
         run: |
-          SHA=$(grep "^EXPECTED_SHA256=" scripts/download_test_model.sh | cut -d'"' -f2)
           FILE=$(grep "^MODEL_FILE=" scripts/download_test_model.sh | cut -d'"' -f2)
-          echo "sha256=$SHA" >> $GITHUB_OUTPUT
           echo "file=$FILE" >> $GITHUB_OUTPUT
-          echo "Model SHA256: $SHA"
           echo "Model File: $FILE"
+          # Use file size as part of cache key since we don't have SHA256 yet
+          echo "cache_key=gemma-3n-e2b-3.14gb-v1" >> $GITHUB_OUTPUT
 
       - name: Cache Model File
         id: cache-model
         uses: actions/cache@v4
         with:
           path: ~/models/${{ steps.get-model-info.outputs.file }}
-          key: model-gemma-3n-e2b-${{ steps.get-model-info.outputs.sha256 }}
+          key: model-${{ steps.get-model-info.outputs.cache_key }}
 
       - name: Setup Python for model download
         if: steps.cache-model.outputs.cache-hit != 'true'
