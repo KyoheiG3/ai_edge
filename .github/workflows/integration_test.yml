@@ -64,9 +64,24 @@ jobs:
           # List available devices
           xcrun simctl list devices
 
-          # Create and boot iPhone 15 Pro simulator
-          DEVICE_ID=$(xcrun simctl create "iPhone 15 Pro" "iPhone 15 Pro" "iOS17.2" 2>/dev/null || \
-                      xcrun simctl list devices | grep "iPhone 15 Pro" | head -1 | grep -oE '[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}' | head -1)
+          # Try to find an existing iPhone 16 Pro, or use the first available iPhone
+          DEVICE_ID=$(xcrun simctl list devices | grep "iPhone 16 Pro" | head -1 | grep -oE '[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}' | head -1)
+          
+          # If no iPhone 16 Pro, try iPhone 15 Pro
+          if [ -z "$DEVICE_ID" ]; then
+            DEVICE_ID=$(xcrun simctl list devices | grep "iPhone 15 Pro" | head -1 | grep -oE '[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}' | head -1)
+          fi
+          
+          # If still no device, use any available iPhone
+          if [ -z "$DEVICE_ID" ]; then
+            DEVICE_ID=$(xcrun simctl list devices | grep "iPhone" | grep -v "unavailable" | head -1 | grep -oE '[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}' | head -1)
+          fi
+          
+          if [ -z "$DEVICE_ID" ]; then
+            echo "No suitable iPhone simulator found. Available devices:"
+            xcrun simctl list devices
+            exit 1
+          fi
 
           echo "Device ID: $DEVICE_ID"
           xcrun simctl boot $DEVICE_ID || true
