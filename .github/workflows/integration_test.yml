@@ -1,0 +1,203 @@
+name: Integration Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Model configuration is defined in scripts/download_test_model.sh
+
+jobs:
+  test-ios:
+    runs-on: macos-latest
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Mise
+        uses: jdx/mise-action@v2
+        with:
+          install: true
+          cache: true
+
+      - name: Get model info from script
+        id: get-model-info
+        run: |
+          SHA=$(grep "^EXPECTED_SHA256=" scripts/download_test_model.sh | cut -d'"' -f2)
+          FILE=$(grep "^MODEL_FILE=" scripts/download_test_model.sh | cut -d'"' -f2)
+          echo "sha256=$SHA" >> $GITHUB_OUTPUT
+          echo "file=$FILE" >> $GITHUB_OUTPUT
+          echo "Model SHA256: $SHA"
+          echo "Model File: $FILE"
+
+      - name: Cache Model File
+        id: cache-model
+        uses: actions/cache@v4
+        with:
+          path: ~/models/${{ steps.get-model-info.outputs.file }}
+          key: model-gemma-3n-e2b-${{ steps.get-model-info.outputs.sha256 }}
+
+      - name: Download Model if not cached
+        if: steps.cache-model.outputs.cache-hit != 'true'
+        run: |
+          # Use the download script (it has the SHA256 built-in)
+          ./scripts/download_test_model.sh ~/models
+
+      - name: Start iOS Simulator
+        run: |
+          # List available devices
+          xcrun simctl list devices
+
+          # Create and boot iPhone 15 Pro simulator
+          DEVICE_ID=$(xcrun simctl create "iPhone 15 Pro" "iPhone 15 Pro" "iOS17.2" 2>/dev/null || \
+                      xcrun simctl list devices | grep "iPhone 15 Pro" | head -1 | grep -oE '[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}' | head -1)
+
+          echo "Device ID: $DEVICE_ID"
+          xcrun simctl boot $DEVICE_ID || true
+
+          # Wait for simulator to be ready
+          xcrun simctl bootstatus $DEVICE_ID
+
+      - name: Copy Model to Simulator
+        id: get-device
+        run: |
+          # Get the booted device ID
+          DEVICE_ID=$(xcrun simctl list devices | grep "Booted" | head -1 | grep -oE '[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}')
+
+          # Create app data directory structure (will be created when app runs)
+          # For now, we'll copy after the app starts
+          echo "Model will be copied during test setup"
+          echo "device_id=$DEVICE_ID" >> $GITHUB_OUTPUT
+
+      - name: Install Dependencies
+        run: |
+          cd example
+          flutter pub get
+
+      - name: Run Integration Tests
+        run: |
+          cd example
+
+          # Set environment variable for model path
+          export TEST_MODEL_PATH=~/models/${{ steps.get-model-info.outputs.file }}
+
+          # Run integration tests
+          flutter test integration_test \
+            --timeout 30m \
+            --device-id=${{ steps.get-device.outputs.device_id }}
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-test-results
+          path: example/test_results/
+
+  test-android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    strategy:
+      matrix:
+        api-level: [33]
+        arch: [x86_64]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Mise
+        uses: jdx/mise-action@v2
+        with:
+          install: true
+          cache: true
+
+      - name: Get model info from script
+        id: get-model-info
+        run: |
+          SHA=$(grep "^EXPECTED_SHA256=" scripts/download_test_model.sh | cut -d'"' -f2)
+          FILE=$(grep "^MODEL_FILE=" scripts/download_test_model.sh | cut -d'"' -f2)
+          echo "sha256=$SHA" >> $GITHUB_OUTPUT
+          echo "file=$FILE" >> $GITHUB_OUTPUT
+          echo "Model SHA256: $SHA"
+          echo "Model File: $FILE"
+
+      - name: Cache Model File
+        id: cache-model
+        uses: actions/cache@v4
+        with:
+          path: ~/models/${{ steps.get-model-info.outputs.file }}
+          key: model-gemma-3n-e2b-${{ steps.get-model-info.outputs.sha256 }}
+
+      - name: Download Model if not cached
+        if: steps.cache-model.outputs.cache-hit != 'true'
+        run: |
+          # Use the download script (it has the SHA256 built-in)
+          ./scripts/download_test_model.sh ~/models
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: AVD cache
+        uses: actions/cache@v4
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-${{ matrix.api-level }}-${{ matrix.arch }}
+
+      - name: Create AVD and generate snapshot for caching
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ matrix.api-level }}
+          arch: ${{ matrix.arch }}
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "Generated AVD snapshot for caching."
+
+      - name: Install Dependencies
+        run: |
+          cd example
+          flutter pub get
+
+      - name: Run Integration Tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ matrix.api-level }}
+          arch: ${{ matrix.arch }}
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: |
+            # Wait for emulator to be ready
+            adb wait-for-device
+            adb shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done;'
+
+            # Create app directory
+            adb shell mkdir -p /storage/emulated/0/Android/data/jp.kyoheig3.ai_edge_example/files/
+
+            # Push model to emulator
+            adb push ~/models/${{ steps.get-model-info.outputs.file }} /storage/emulated/0/Android/data/jp.kyoheig3.ai_edge_example/files/
+
+            # Verify model was copied
+            adb shell ls -la /storage/emulated/0/Android/data/jp.kyoheig3.ai_edge_example/files/
+
+            # Run integration tests
+            cd example
+            export TEST_MODEL_PATH=/storage/emulated/0/Android/data/jp.kyoheig3.ai_edge_example/files/${{ steps.get-model-info.outputs.file }}
+            flutter test integration_test --timeout 30m
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-test-results-${{ matrix.api-level }}
+          path: example/test_results/
