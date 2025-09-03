@@ -23,6 +23,22 @@ Integration tests require a Gemma model file. The tests use the `gemma-3n-E2B-it
 
 #### Local Testing
 
+Quick start for iOS (macOS only):
+```bash
+export HF_TOKEN=your_hugging_face_token
+./scripts/test_local_ios.sh
+```
+
+Quick start for Android:
+```bash
+export HF_TOKEN=your_hugging_face_token
+./scripts/test_local_android.sh
+```
+
+**Note:** The test scripts will automatically download the required model (~3.14GB) on first run and cache it locally. Android tests require at least 8GB of RAM allocated to the emulator.
+
+Or manually:
+
 1. Set up Hugging Face access token:
    ```bash
    export HF_TOKEN=your_hugging_face_token
@@ -36,7 +52,11 @@ Integration tests require a Gemma model file. The tests use the `gemma-3n-E2B-it
 3. Run integration tests:
    ```bash
    cd example
-   flutter test integration_test
+   export TEST_MODEL_PATH=$(realpath ~/models/gemma-3n-E2B-it-int4.task)
+   flutter test integration_test \
+     --dart-define=TEST_MODEL_PATH="$TEST_MODEL_PATH" \
+     --dart-define=HF_TOKEN="$HF_TOKEN" \
+     --dart-define=CI=true
    ```
 
 #### CI/CD Setup
