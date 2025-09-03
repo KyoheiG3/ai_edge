@@ -93,7 +93,7 @@ jobs:
           # Wait for simulator to be ready
           xcrun simctl bootstatus $DEVICE_ID
 
-      - name: Copy Model to Simulator
+      - name: Setup Model Path
         id: get-device
         run: |
           # Get the booted device ID
@@ -104,28 +104,19 @@ jobs:
           echo "Simulator ID: $DEVICE_ID"
           xcrun simctl list devices | grep "Booted"
           
-          # Use xcrun simctl to copy file to the simulator
-          # This ensures the file is accessible within the simulator environment
-          echo "Copying model to simulator..."
-          
-          # First, verify the host file exists
-          if [ ! -f ~/models/${{ steps.get-model-info.outputs.file }} ]; then
-            echo "ERROR: Model file not found at ~/models/${{ steps.get-model-info.outputs.file }}"
+          # Verify the host file exists and get absolute path
+          HOST_MODEL_PATH=$(realpath ~/models/${{ steps.get-model-info.outputs.file }})
+          if [ ! -f "$HOST_MODEL_PATH" ]; then
+            echo "ERROR: Model file not found at $HOST_MODEL_PATH"
             exit 1
           fi
           
-          # Use addmedia to add file to simulator (works better than direct copy)
-          xcrun simctl addmedia $DEVICE_ID ~/models/${{ steps.get-model-info.outputs.file }} || true
+          echo "Model file exists at: $HOST_MODEL_PATH"
+          ls -lh "$HOST_MODEL_PATH"
           
-          # Also try direct copy to tmp
-          SIMULATOR_ROOT=~/Library/Developer/CoreSimulator/Devices/$DEVICE_ID
-          SHARED_DIR=$SIMULATOR_ROOT/data/tmp
-          mkdir -p $SHARED_DIR
-          cp ~/models/${{ steps.get-model-info.outputs.file }} $SHARED_DIR/
-          ls -la $SHARED_DIR/
-          
-          # Export the simulator path for tests
-          echo "simulator_model_path=/tmp/${{ steps.get-model-info.outputs.file }}" >> $GITHUB_OUTPUT
+          # For iOS tests, use the host path directly
+          # The simulator can access host filesystem paths
+          echo "host_model_path=$HOST_MODEL_PATH" >> $GITHUB_OUTPUT
 
       - name: Install Dependencies
         run: |
@@ -138,20 +129,20 @@ jobs:
         run: |
           cd example
 
-          # Use the simulator's tmp path for iOS
-          export TEST_MODEL_PATH=${{ steps.get-device.outputs.simulator_model_path }}
-          echo "TEST_MODEL_PATH for simulator: $TEST_MODEL_PATH"
+          # Use the host path directly for iOS
+          # The simulator can access host filesystem
+          export TEST_MODEL_PATH=${{ steps.get-device.outputs.host_model_path }}
+          echo "TEST_MODEL_PATH (host path): $TEST_MODEL_PATH"
           
-          # Also verify host file exists
-          HOST_MODEL_PATH=$(realpath ~/models/${{ steps.get-model-info.outputs.file }})
-          echo "Host model path: $HOST_MODEL_PATH"
-          if [ ! -f "$HOST_MODEL_PATH" ]; then
-            echo "ERROR: Model file not found on host at $HOST_MODEL_PATH"
+          # Verify file exists
+          if [ ! -f "$TEST_MODEL_PATH" ]; then
+            echo "ERROR: Model file not found at $TEST_MODEL_PATH"
             exit 1
           fi
+          
+          echo "Model file size: $(ls -lh $TEST_MODEL_PATH | awk '{print $5}')"
 
           # Run integration tests with environment variables
-          # The test will access the file from within the simulator
           # Using dart-define to pass variables directly to the test
           # Set timeout to 2m per test file
           flutter test integration_test \
