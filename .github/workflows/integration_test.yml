@@ -17,7 +17,7 @@ concurrency:
 jobs:
   test-ios:
     runs-on: macos-latest
-    timeout-minutes: 60
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v4
@@ -141,7 +141,7 @@ jobs:
           # The test will access the file from within the simulator
           # Using dart-define to pass variables directly to the test
           flutter test integration_test \
-            --timeout 30m \
+            --timeout 10m \
             --device-id=${{ steps.get-device.outputs.device_id }} \
             --dart-define=TEST_MODEL_PATH="$TEST_MODEL_PATH" \
             --dart-define=HF_TOKEN="${{ secrets.HF_TOKEN }}" \
@@ -156,7 +156,7 @@ jobs:
 
   test-android:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 30
 
     strategy:
       matrix:
@@ -285,7 +285,7 @@ jobs:
             adb shell cp /sdcard/Download/${{ steps.get-model-info.outputs.file }} /sdcard/Android/data/jp.kyoheig3.ai_edge_example/files/ || true
             
             # Run integration tests with model in Download folder (more reliable)
-            cd ${{ github.workspace }}/example && export TEST_MODEL_PATH=/sdcard/Download/${{ steps.get-model-info.outputs.file }} && flutter test integration_test --timeout 30m
+            cd ${{ github.workspace }}/example && export TEST_MODEL_PATH=/sdcard/Download/${{ steps.get-model-info.outputs.file }} && flutter test integration_test --timeout 10m
 
       - name: Upload Test Results
         if: always()
