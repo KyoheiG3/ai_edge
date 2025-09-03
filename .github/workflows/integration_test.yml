@@ -248,11 +248,7 @@ jobs:
 
             # Build and install the app first (this creates the app directory)
             # Use && to chain commands in same shell
-            cd ${{ github.workspace }}/example && \
-            pwd && \
-            ls -la && \
-            flutter build apk --debug && \
-            adb install -r build/app/outputs/flutter-apk/app-debug.apk
+            cd ${{ github.workspace }}/example && pwd && ls -la && flutter build apk --debug && adb install -r build/app/outputs/flutter-apk/app-debug.apk
             
             # Give the app storage permissions
             adb shell pm grant jp.kyoheig3.ai_edge_example android.permission.READ_EXTERNAL_STORAGE || true
@@ -263,9 +259,7 @@ jobs:
             adb shell cp /sdcard/Download/${{ steps.get-model-info.outputs.file }} /sdcard/Android/data/jp.kyoheig3.ai_edge_example/files/ || true
             
             # Run integration tests with model in Download folder (more reliable)
-            cd ${{ github.workspace }}/example && \
-            export TEST_MODEL_PATH=/sdcard/Download/${{ steps.get-model-info.outputs.file }} && \
-            flutter test integration_test --timeout 30m
+            cd ${{ github.workspace }}/example && export TEST_MODEL_PATH=/sdcard/Download/${{ steps.get-model-info.outputs.file }} && flutter test integration_test --timeout 30m
 
       - name: Upload Test Results
         if: always()
