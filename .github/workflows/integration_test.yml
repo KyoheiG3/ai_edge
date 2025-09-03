@@ -100,16 +100,29 @@ jobs:
           DEVICE_ID=$(xcrun simctl list devices | grep "Booted" | head -1 | grep -oE '[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}')
           echo "device_id=$DEVICE_ID" >> $GITHUB_OUTPUT
           
-          # Copy model to simulator's shared container (accessible without app installation)
-          SIMULATOR_ROOT=~/Library/Developer/CoreSimulator/Devices/$DEVICE_ID
+          # Debug: Show simulator info
+          echo "Simulator ID: $DEVICE_ID"
+          xcrun simctl list devices | grep "Booted"
           
-          # Create a temporary shared directory in simulator
+          # Use xcrun simctl to copy file to the simulator
+          # This ensures the file is accessible within the simulator environment
+          echo "Copying model to simulator..."
+          
+          # First, verify the host file exists
+          if [ ! -f ~/models/${{ steps.get-model-info.outputs.file }} ]; then
+            echo "ERROR: Model file not found at ~/models/${{ steps.get-model-info.outputs.file }}"
+            exit 1
+          fi
+          
+          # Use addmedia to add file to simulator (works better than direct copy)
+          xcrun simctl addmedia $DEVICE_ID ~/models/${{ steps.get-model-info.outputs.file }} || true
+          
+          # Also try direct copy to tmp
+          SIMULATOR_ROOT=~/Library/Developer/CoreSimulator/Devices/$DEVICE_ID
           SHARED_DIR=$SIMULATOR_ROOT/data/tmp
           mkdir -p $SHARED_DIR
-          
-          # Copy model to simulator's tmp directory
           cp ~/models/${{ steps.get-model-info.outputs.file }} $SHARED_DIR/
-          echo "Model copied to simulator: $SHARED_DIR/${{ steps.get-model-info.outputs.file }}"
+          ls -la $SHARED_DIR/
           
           # Export the simulator path for tests
           echo "simulator_model_path=/tmp/${{ steps.get-model-info.outputs.file }}" >> $GITHUB_OUTPUT
@@ -140,8 +153,10 @@ jobs:
           # Run integration tests with environment variables
           # The test will access the file from within the simulator
           # Using dart-define to pass variables directly to the test
+          # Set timeout to 2m per test file
           flutter test integration_test \
-            --timeout 10m \
+            --timeout 2m \
+            --test-randomize-ordering-seed random \
             --device-id=${{ steps.get-device.outputs.device_id }} \
             --dart-define=TEST_MODEL_PATH="$TEST_MODEL_PATH" \
             --dart-define=HF_TOKEN="${{ secrets.HF_TOKEN }}" \
