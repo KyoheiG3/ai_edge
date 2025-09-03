@@ -110,11 +110,25 @@ jobs:
           flutter pub get
 
       - name: Run Integration Tests
+        env:
+          TEST_MODEL_PATH: ${{ github.workspace }}/../models/${{ steps.get-model-info.outputs.file }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           cd example
 
-          # Set environment variable for model path
-          export TEST_MODEL_PATH=~/models/${{ steps.get-model-info.outputs.file }}
+          # Debug: Check if model exists and show full path
+          echo "TEST_MODEL_PATH: $TEST_MODEL_PATH"
+          ls -la ~/models/ || true
+          
+          # Convert to absolute path
+          export TEST_MODEL_PATH=$(realpath ~/models/${{ steps.get-model-info.outputs.file }})
+          echo "Absolute TEST_MODEL_PATH: $TEST_MODEL_PATH"
+          
+          # Verify file exists
+          if [ ! -f "$TEST_MODEL_PATH" ]; then
+            echo "ERROR: Model file not found at $TEST_MODEL_PATH"
+            exit 1
+          fi
 
           # Run integration tests
           flutter test integration_test \

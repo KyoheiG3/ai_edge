@@ -23,30 +23,39 @@ class TestModelHelper {
   static Future<String> ensureTestModel() async {
     init();
 
-    // Check if running in CI
-    final isCI = Platform.environment['CI'] == 'true';
+    // Check if TEST_MODEL_PATH environment variable is set (for CI)
     final testModelPath = Platform.environment['TEST_MODEL_PATH'];
-
-    if (isCI && testModelPath != null) {
-      // In CI, model should be pre-downloaded
+    if (testModelPath != null && testModelPath.isNotEmpty) {
+      debugPrint('TEST_MODEL_PATH from environment: $testModelPath');
+      
+      // Verify the file exists
       final modelFile = File(testModelPath);
-      if (!await modelFile.exists()) {
-        throw TestFailure(
-          'Model file not found in CI environment: $testModelPath',
-        );
-      }
-
-      // Copy to expected location if needed
-      final expectedPath = await _downloadService.getModelPath(testModel);
-      if (testModelPath != expectedPath) {
-        final expectedFile = File(expectedPath);
-        if (!await expectedFile.exists()) {
-          await expectedFile.parent.create(recursive: true);
-          await modelFile.copy(expectedPath);
+      if (await modelFile.exists()) {
+        debugPrint('Model file found at TEST_MODEL_PATH: $testModelPath');
+        
+        // Copy to expected location if needed
+        final expectedPath = await _downloadService.getModelPath(testModel);
+        if (testModelPath != expectedPath) {
+          final expectedFile = File(expectedPath);
+          if (!await expectedFile.exists()) {
+            debugPrint('Copying model to expected location: $expectedPath');
+            await expectedFile.parent.create(recursive: true);
+            await modelFile.copy(expectedPath);
+          }
         }
+        
+        return expectedPath;
+      } else {
+        debugPrint('WARNING: TEST_MODEL_PATH set but file not found: $testModelPath');
       }
-
-      return expectedPath;
+    }
+    
+    // Check if running in CI without TEST_MODEL_PATH
+    final isCI = Platform.environment['CI'] == 'true';
+    if (isCI) {
+      throw TestFailure(
+        'CI environment detected but TEST_MODEL_PATH not set or file not found',
+      );
     }
 
     // Check if model is already downloaded
