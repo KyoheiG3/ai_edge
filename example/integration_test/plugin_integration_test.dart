@@ -16,7 +16,7 @@ void main() {
         }
 
         // Initialize model
-        await aiEdge.initialize(modelPath: modelPath, maxTokens: 256);
+        await aiEdge.initialize(modelPath: modelPath, maxTokens: 512);
         await aiEdge.addQueryChunk('Please answer within 3 sentences.');
 
         // Test basic functionality
@@ -39,7 +39,7 @@ void main() {
       // Initialize first session
       await aiEdge.initialize(
         modelPath: modelPath,
-        maxTokens: 256,
+        maxTokens: 512,
         sessionConfig: const SessionConfig(temperature: 0.5),
       );
       await aiEdge.addQueryChunk('Please answer within 3 sentences.');

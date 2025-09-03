@@ -16,7 +16,7 @@ void main() {
         }
 
         // Initialize model
-        await aiEdge.initialize(modelPath: modelPath, maxTokens: 256);
+        await aiEdge.initialize(modelPath: modelPath, maxTokens: 512);
         await aiEdge.addQueryChunk('Please answer within 3 sentences.');
 
         // Verify it works
@@ -27,7 +27,7 @@ void main() {
         await aiEdge.close();
 
         // Reinitialize to verify cleanup was successful
-        await aiEdge.initialize(modelPath: modelPath, maxTokens: 256);
+        await aiEdge.initialize(modelPath: modelPath, maxTokens: 512);
         await aiEdge.addQueryChunk('Please answer within 3 sentences.');
 
         final response2 = await aiEdge.generateResponse('Hi');
@@ -47,7 +47,7 @@ void main() {
 
       // Create model once
       await aiEdge.createModel(
-        ModelConfig(modelPath: modelPath, maxTokens: 256),
+        ModelConfig(modelPath: modelPath, maxTokens: 512),
       );
 
       // Create first session
@@ -83,7 +83,7 @@ void main() {
 
         // Multiple init/close cycles to verify no resource leaks
         for (int i = 0; i < 3; i++) {
-          await aiEdge.initialize(modelPath: modelPath, maxTokens: 256);
+          await aiEdge.initialize(modelPath: modelPath, maxTokens: 512);
           await aiEdge.addQueryChunk('Please answer within 3 sentences.');
 
           final response = await aiEdge.generateResponse('Hi');

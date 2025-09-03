@@ -15,7 +15,7 @@ void main() {
     }
 
     aiEdge = AiEdge.instance;
-    await aiEdge.initialize(modelPath: modelPath, maxTokens: 256);
+    await aiEdge.initialize(modelPath: modelPath, maxTokens: 512);
     await aiEdge.addQueryChunk('Please answer within 3 sentences.');
   });
 
