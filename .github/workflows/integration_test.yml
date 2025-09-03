@@ -247,8 +247,11 @@ jobs:
             adb shell ls -la /sdcard/Download/${{ steps.get-model-info.outputs.file }}
 
             # Build and install the app first (this creates the app directory)
-            cd ${{ github.workspace }}/example
-            flutter build apk --debug
+            # Use && to chain commands in same shell
+            cd ${{ github.workspace }}/example && \
+            pwd && \
+            ls -la && \
+            flutter build apk --debug && \
             adb install -r build/app/outputs/flutter-apk/app-debug.apk
             
             # Give the app storage permissions
@@ -260,8 +263,8 @@ jobs:
             adb shell cp /sdcard/Download/${{ steps.get-model-info.outputs.file }} /sdcard/Android/data/jp.kyoheig3.ai_edge_example/files/ || true
             
             # Run integration tests with model in Download folder (more reliable)
-            cd ${{ github.workspace }}/example
-            export TEST_MODEL_PATH=/sdcard/Download/${{ steps.get-model-info.outputs.file }}
+            cd ${{ github.workspace }}/example && \
+            export TEST_MODEL_PATH=/sdcard/Download/${{ steps.get-model-info.outputs.file }} && \
             flutter test integration_test --timeout 30m
 
       - name: Upload Test Results
