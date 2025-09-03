@@ -139,12 +139,13 @@ jobs:
 
           # Run integration tests with environment variables
           # The test will access the file from within the simulator
-          TEST_MODEL_PATH="$TEST_MODEL_PATH" \
-          HF_TOKEN="${{ secrets.HF_TOKEN }}" \
-          CI=true \
+          # Using dart-define to pass variables directly to the test
           flutter test integration_test \
             --timeout 30m \
-            --device-id=${{ steps.get-device.outputs.device_id }}
+            --device-id=${{ steps.get-device.outputs.device_id }} \
+            --dart-define=TEST_MODEL_PATH="$TEST_MODEL_PATH" \
+            --dart-define=HF_TOKEN="${{ secrets.HF_TOKEN }}" \
+            --dart-define=CI=true
 
       - name: Upload Test Results
         if: always()

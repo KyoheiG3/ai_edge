@@ -23,10 +23,29 @@ class TestModelHelper {
   static Future<String> ensureTestModel() async {
     init();
 
-    // Check if TEST_MODEL_PATH environment variable is set (for CI)
-    final testModelPath = Platform.environment['TEST_MODEL_PATH'];
+    // Debug: Print all environment variables
+    debugPrint('=== Environment Variables ===');
+    Platform.environment.forEach((key, value) {
+      if (key.startsWith('TEST_') || key == 'CI' || key == 'HF_TOKEN') {
+        debugPrint('$key: ${key == 'HF_TOKEN' ? '***' : value}');
+      }
+    });
+    debugPrint('=== End Environment Variables ===');
+
+    // Check if TEST_MODEL_PATH is set (from environment or dart-define)
+    String? testModelPath = Platform.environment['TEST_MODEL_PATH'];
+    
+    // If not in environment, try from dart-define
+    if ((testModelPath == null || testModelPath.isEmpty)) {
+      const definedPath = String.fromEnvironment('TEST_MODEL_PATH');
+      if (definedPath.isNotEmpty) {
+        testModelPath = definedPath;
+        debugPrint('TEST_MODEL_PATH from dart-define: $testModelPath');
+      }
+    }
+    
     if (testModelPath != null && testModelPath.isNotEmpty) {
-      debugPrint('TEST_MODEL_PATH from environment: $testModelPath');
+      debugPrint('Using TEST_MODEL_PATH: $testModelPath');
       
       // Verify the file exists
       final modelFile = File(testModelPath);
@@ -51,7 +70,8 @@ class TestModelHelper {
     }
     
     // Check if running in CI without TEST_MODEL_PATH
-    final isCI = Platform.environment['CI'] == 'true';
+    final isCI = Platform.environment['CI'] == 'true' || 
+                 const String.fromEnvironment('CI') == 'true';
     if (isCI) {
       throw TestFailure(
         'CI environment detected but TEST_MODEL_PATH not set or file not found',
