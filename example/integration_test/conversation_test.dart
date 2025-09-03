@@ -16,7 +16,7 @@ void main() {
 
     aiEdge = AiEdge.instance;
     await aiEdge.initialize(modelPath: modelPath, maxTokens: 512);
-    await aiEdge.addQueryChunk('Please answer within 3 sentences.');
+    await aiEdge.addQueryChunk('Keep your response short.');
   });
 
   tearDownAll(() async {
@@ -68,7 +68,7 @@ void main() {
       final testCases = [
         ('What is the capital of Japan?', 'tokyo'),
         ('Translate "hello" to Spanish', ['hola', 'buenos']),
-        ('Is 7 a prime number?', ['yes', 'prime', '7']),
+        ('What color is the sky?', ['blue', 'gray']),
       ];
 
       for (final (prompt, expectedKeywords) in testCases) {

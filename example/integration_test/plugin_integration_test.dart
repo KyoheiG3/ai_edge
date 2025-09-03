@@ -17,7 +17,7 @@ void main() {
 
         // Initialize model
         await aiEdge.initialize(modelPath: modelPath, maxTokens: 512);
-        await aiEdge.addQueryChunk('Please answer within 3 sentences.');
+        await aiEdge.addQueryChunk('Keep your response short.');
 
         // Test basic functionality
         final response = await aiEdge.generateResponse('Hello');
@@ -42,14 +42,14 @@ void main() {
         maxTokens: 512,
         sessionConfig: const SessionConfig(temperature: 0.5),
       );
-      await aiEdge.addQueryChunk('Please answer within 3 sentences.');
+      await aiEdge.addQueryChunk('Keep your response short.');
 
       final response1 = await aiEdge.generateResponse('Hi');
       expect(response1, isNotEmpty);
 
       // Create new session with different config
       await aiEdge.createSession(const SessionConfig(temperature: 0.9));
-      await aiEdge.addQueryChunk('Please answer within 3 sentences.');
+      await aiEdge.addQueryChunk('Keep your response short.');
 
       final response2 = await aiEdge.generateResponse('Hello');
       expect(response2, isNotEmpty);

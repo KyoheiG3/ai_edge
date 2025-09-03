@@ -17,7 +17,7 @@ void main() {
 
         // Initialize model
         await aiEdge.initialize(modelPath: modelPath, maxTokens: 512);
-        await aiEdge.addQueryChunk('Please answer within 3 sentences.');
+        await aiEdge.addQueryChunk('Keep your response short.');
 
         // Verify it works
         final response = await aiEdge.generateResponse('Hello');
@@ -28,7 +28,7 @@ void main() {
 
         // Reinitialize to verify cleanup was successful
         await aiEdge.initialize(modelPath: modelPath, maxTokens: 512);
-        await aiEdge.addQueryChunk('Please answer within 3 sentences.');
+        await aiEdge.addQueryChunk('Keep your response short.');
 
         final response2 = await aiEdge.generateResponse('Hi');
         expect(response2, isNotEmpty);
@@ -52,14 +52,14 @@ void main() {
 
       // Create first session
       await aiEdge.createSession(const SessionConfig(temperature: 0.5));
-      await aiEdge.addQueryChunk('Please answer within 3 sentences.');
+      await aiEdge.addQueryChunk('Keep your response short.');
 
       final response1 = await aiEdge.generateResponse('Count to 3');
       expect(response1, isNotEmpty);
 
       // Create new session (replaces previous)
       await aiEdge.createSession(const SessionConfig(temperature: 0.9));
-      await aiEdge.addQueryChunk('Please answer within 3 sentences.');
+      await aiEdge.addQueryChunk('Keep your response short.');
 
       final response2 = await aiEdge.generateResponse('Count to 3');
       expect(response2, isNotEmpty);
@@ -84,7 +84,7 @@ void main() {
         // Multiple init/close cycles to verify no resource leaks
         for (int i = 0; i < 3; i++) {
           await aiEdge.initialize(modelPath: modelPath, maxTokens: 512);
-          await aiEdge.addQueryChunk('Please answer within 3 sentences.');
+          await aiEdge.addQueryChunk('Keep your response short.');
 
           final response = await aiEdge.generateResponse('Hi');
           expect(response, isNotEmpty);

@@ -16,7 +16,7 @@ void main() {
 
     aiEdge = AiEdge.instance;
     await aiEdge.initialize(modelPath: modelPath, maxTokens: 512);
-    await aiEdge.addQueryChunk('Please answer within 3 sentences.');
+    await aiEdge.addQueryChunk('Keep your response short.');
   });
 
   tearDownAll(() async {
