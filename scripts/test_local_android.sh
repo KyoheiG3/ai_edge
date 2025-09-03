@@ -21,7 +21,8 @@ echo "📥 Checking for test model..."
 ./scripts/download_test_model.sh ~/models
 
 # Get model path
-MODEL_FILE=$(grep "^MODEL_FILE=" scripts/download_test_model.sh | cut -d'"' -f2)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../.github/workflows/model.env"
 MODEL_PATH=$(realpath ~/models/$MODEL_FILE)
 
 if [ ! -f "$MODEL_PATH" ]; then
