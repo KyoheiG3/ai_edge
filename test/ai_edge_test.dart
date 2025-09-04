@@ -14,7 +14,7 @@ class MockAiEdgePlatform extends Fake
   SessionConfig? lastSessionConfig;
   String? lastPrompt;
   Uint8List? lastImageBytes;
-  
+
   @override
   Future<void> createModel(ModelConfig config) async {
     methodCalls.add('createModel');
@@ -116,10 +116,19 @@ void main() {
           await aiEdge.createModel(config);
 
           // Then
-          expect(mockPlatform.lastModelConfig?.modelPath, equals('/path/to/model'));
+          expect(
+            mockPlatform.lastModelConfig?.modelPath,
+            equals('/path/to/model'),
+          );
           expect(mockPlatform.lastModelConfig?.maxTokens, equals(512));
-          expect(mockPlatform.lastModelConfig?.supportedLoraRanks, equals([4, 8]));
-          expect(mockPlatform.lastModelConfig?.preferredBackend, equals(PreferredBackend.gpu));
+          expect(
+            mockPlatform.lastModelConfig?.supportedLoraRanks,
+            equals([4, 8]),
+          );
+          expect(
+            mockPlatform.lastModelConfig?.preferredBackend,
+            equals(PreferredBackend.gpu),
+          );
           expect(mockPlatform.lastModelConfig?.maxNumImages, equals(3));
         });
       });
@@ -168,13 +177,13 @@ void main() {
           const maxTokens = 256;
 
           // When
-          await aiEdge.initialize(
-            modelPath: modelPath,
-            maxTokens: maxTokens,
-          );
+          await aiEdge.initialize(modelPath: modelPath, maxTokens: maxTokens);
 
           // Then
-          expect(mockPlatform.methodCalls, equals(['createModel', 'createSession']));
+          expect(
+            mockPlatform.methodCalls,
+            equals(['createModel', 'createSession']),
+          );
           expect(mockPlatform.lastModelConfig?.modelPath, equals(modelPath));
           expect(mockPlatform.lastModelConfig?.maxTokens, equals(maxTokens));
           expect(mockPlatform.lastSessionConfig, isNotNull);
@@ -200,7 +209,10 @@ void main() {
           );
 
           // Then
-          expect(mockPlatform.methodCalls, equals(['createModel', 'createSession']));
+          expect(
+            mockPlatform.methodCalls,
+            equals(['createModel', 'createSession']),
+          );
           expect(mockPlatform.lastSessionConfig?.temperature, equals(0.5));
           expect(mockPlatform.lastSessionConfig?.randomSeed, equals(123));
           expect(mockPlatform.lastSessionConfig?.topK, equals(30));
@@ -320,7 +332,7 @@ void main() {
           // When
           final stream = aiEdge.generateResponseAsync();
           final events = await stream.toList();
-          
+
           // Accumulate partial results
           String accumulated = '';
           for (final event in events) {
@@ -375,14 +387,11 @@ void main() {
 
           // When
           final stream = aiEdge.generateResponseAsync();
-          
+
           // Then
-          expectLater(
-            stream,
-            emitsError(isA<Exception>()),
-          );
+          expectLater(stream, emitsError(isA<Exception>()));
         });
-        
+
         tearDown(() {
           // Reset error flag for other tests
           mockPlatform.shouldThrowError = false;
@@ -404,7 +413,7 @@ void main() {
           expect(events.last.done, isTrue);
         });
       });
-      
+
       group('when validating streaming response', () {
         test('then should have partial results before done', () async {
           // Given
@@ -418,12 +427,18 @@ void main() {
 
           // Then
           final hasPartialResults = events.any((e) => !e.done);
-          expect(hasPartialResults, isTrue, 
-            reason: 'Streaming should include partial results');
-          
+          expect(
+            hasPartialResults,
+            isTrue,
+            reason: 'Streaming should include partial results',
+          );
+
           final hasComplete = events.any((e) => e.done);
-          expect(hasComplete, isTrue,
-            reason: 'Streaming should end with a complete result');
+          expect(
+            hasComplete,
+            isTrue,
+            reason: 'Streaming should end with a complete result',
+          );
         });
       });
     });
@@ -524,10 +539,7 @@ void main() {
       group('when fromMap is called with valid map', () {
         test('then GenerationEvent is created', () {
           // Given
-          final map = {
-            'partialResult': 'Hello World',
-            'done': true,
-          };
+          final map = {'partialResult': 'Hello World', 'done': true};
 
           // When
           final event = GenerationEvent.fromMap(map);

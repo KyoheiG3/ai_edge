@@ -16,7 +16,7 @@ class DownloadProgress {
   String get downloadedSize => _formatBytes(downloadedBytes);
   String get totalSize => _formatBytes(totalBytes);
   String get speed => '${_formatBytes(bytesPerSecond.round())}/s';
-  
+
   String get remainingTime {
     if (estimatedTimeRemaining.inSeconds < 60) {
       return '${estimatedTimeRemaining.inSeconds}s';

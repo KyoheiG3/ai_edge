@@ -42,14 +42,14 @@ class _HomeScreenState extends State<HomeScreen> {
       final hasToken = await _configService.hasToken();
       if (!hasToken) {
         if (!mounted) return;
-        
+
         final shouldOpenSettings = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
             title: const Text('Authentication Required'),
             content: const Text(
               'Authentication is enabled but no token is configured. '
-              'Would you like to configure your HuggingFace token?'
+              'Would you like to configure your HuggingFace token?',
             ),
             actions: [
               TextButton(
@@ -80,17 +80,19 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     try {
-      await for (final progress in _downloadService.downloadModelWithProgress(model)) {
+      await for (final progress in _downloadService.downloadModelWithProgress(
+        model,
+      )) {
         setState(() {
           _downloadProgress[model.id] = progress;
         });
       }
-      
+
       setState(() {
         _downloadedModels[model.id] = true;
         _isDownloading[model.id] = false;
       });
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('${model.name} downloaded successfully')),
       );
@@ -99,7 +101,7 @@ class _HomeScreenState extends State<HomeScreen> {
         _isDownloading[model.id] = false;
         _downloadProgress[model.id] = null;
       });
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to download ${model.name}: $e'),
@@ -133,10 +135,10 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         _downloadedModels[model.id] = false;
       });
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${model.name} deleted')),
-      );
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('${model.name} deleted')));
     }
   }
 
@@ -145,10 +147,7 @@ class _HomeScreenState extends State<HomeScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ChatScreen(
-          model: model,
-          modelPath: modelPath,
-        ),
+        builder: (context) => ChatScreen(model: model, modelPath: modelPath),
       ),
     );
   }
@@ -203,7 +202,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 16),
                   if (isDownloading) ...[
-                    LinearProgressIndicator(value: downloadProgress?.progress ?? 0),
+                    LinearProgressIndicator(
+                      value: downloadProgress?.progress ?? 0,
+                    ),
                     const SizedBox(height: 8),
                     if (downloadProgress != null) ...[
                       Row(
