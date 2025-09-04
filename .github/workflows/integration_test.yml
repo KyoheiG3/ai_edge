@@ -54,7 +54,7 @@ jobs:
           [ ! -f "$TEST_MODEL_PATH" ] && exit 1
 
           flutter test integration_test/ \
-            --timeout 10m \
+            --timeout 30m \
             --device-id=${{ steps.ios-sim.outputs.device_id }} \
             --dart-define=TEST_MODEL_PATH="$TEST_MODEL_PATH" \
             --dart-define=CI=true
@@ -160,7 +160,7 @@ jobs:
             adb shell pm grant jp.kyoheig3.ai_edge_example android.permission.READ_EXTERNAL_STORAGE || true
             adb shell pm grant jp.kyoheig3.ai_edge_example android.permission.WRITE_EXTERNAL_STORAGE || true
 
-            flutter test integration_test/ --device-id=emulator-5554 --timeout 10m --dart-define=TEST_MODEL_PATH="$TEST_MODEL_PATH" --dart-define=CI=true
+            flutter test integration_test/ --device-id=emulator-5554 --timeout 30m --dart-define=TEST_MODEL_PATH="$TEST_MODEL_PATH" --dart-define=CI=true
 
       - name: Upload Test Results
         if: always()

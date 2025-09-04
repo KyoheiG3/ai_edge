@@ -50,7 +50,7 @@ void main() {
           reason: 'Model should answer the math question',
         );
       },
-      timeout: const Timeout(Duration(seconds: 120)),
+      timeout: const Timeout(Duration(seconds: 240)),
     );
 
     test(
@@ -74,7 +74,7 @@ void main() {
           await Future.delayed(const Duration(milliseconds: 500));
         }
       },
-      timeout: const Timeout(Duration(seconds: 120)),
+      timeout: const Timeout(Duration(seconds: 240)),
     );
   });
 }

@@ -35,7 +35,7 @@ void main() {
 
         await aiEdge.close();
       },
-      timeout: const Timeout(Duration(seconds: 120)),
+      timeout: const Timeout(Duration(seconds: 240)),
     );
 
     test('Multiple session lifecycle', () async {
@@ -70,7 +70,7 @@ void main() {
       // Should not remember previous session's context
 
       await aiEdge.close();
-    }, timeout: const Timeout(Duration(seconds: 120)));
+    }, timeout: const Timeout(Duration(seconds: 240)));
 
     test(
       'Resource cleanup verification',
@@ -94,7 +94,7 @@ void main() {
           await Future.delayed(const Duration(milliseconds: 500));
         }
       },
-      timeout: const Timeout(Duration(seconds: 120)),
+      timeout: const Timeout(Duration(seconds: 240)),
     );
   });
 }

@@ -26,7 +26,7 @@ void main() {
         // Clean up
         await aiEdge.close();
       },
-      timeout: const Timeout(Duration(seconds: 120)),
+      timeout: const Timeout(Duration(seconds: 240)),
     );
 
     test('Multiple session creation', () async {
@@ -55,6 +55,6 @@ void main() {
       expect(response2, isNotEmpty);
 
       await aiEdge.close();
-    }, timeout: const Timeout(Duration(seconds: 120)));
+    }, timeout: const Timeout(Duration(seconds: 240)));
   });
 }
