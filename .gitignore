@@ -15,6 +15,10 @@ migrate_working_dir/
 # Test models (large files)
 .models/
 
+# IDE and tool configurations
+.vscode/
+.claude/
+
 # IntelliJ related
 *.iml
 *.ipr
