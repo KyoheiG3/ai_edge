@@ -59,12 +59,6 @@ jobs:
             --dart-define=TEST_MODEL_PATH="$TEST_MODEL_PATH" \
             --dart-define=CI=true
 
-      - name: Upload Test Results
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: ios-test-results
-          path: example/test_results/
 
   test-android:
     runs-on: ubuntu-latest
@@ -162,9 +156,3 @@ jobs:
 
             flutter test integration_test/ --device-id=emulator-5554 --timeout 30m --dart-define=TEST_MODEL_PATH="$TEST_MODEL_PATH" --dart-define=CI=true
 
-      - name: Upload Test Results
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: android-test-results
-          path: example/test_results/
