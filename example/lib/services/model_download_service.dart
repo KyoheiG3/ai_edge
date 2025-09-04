@@ -43,21 +43,10 @@ class ModelDownloadService {
     return File(modelPath).exists();
   }
 
-  Future<bool> hasEnoughSpace(GemmaModel model) async {
-    try {
-      final appDir = await getApplicationDocumentsDirectory();
-      // Get available space using statSync
-      final _ = await FileStat.stat(appDir.path);
-      // This is a simplified check - in production you'd use platform channels
-      // to get actual free space
-      return true; // For now, return true but log warning
-    } catch (e) {
-      return true;
-    }
-  }
-
   Stream<DownloadProgress> downloadModelWithProgress(GemmaModel model) async* {
-    debugPrint('[ModelDownloadService] Starting download for model: ${model.name}');
+    debugPrint(
+      '[ModelDownloadService] Starting download for model: ${model.name}',
+    );
     final modelPath = await getModelPath(model);
     debugPrint('[ModelDownloadService] Model will be saved to: $modelPath');
     final file = File(modelPath);
