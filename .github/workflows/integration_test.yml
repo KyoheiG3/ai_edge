@@ -52,9 +52,8 @@ jobs:
           export TEST_MODEL_PATH=${{ steps.model.outputs.path }}
           [ ! -f "$TEST_MODEL_PATH" ] && exit 1
 
-          flutter test integration_test \
+          flutter test integration_test/ \
             --timeout 10m \
-            --fail-fast \
             --device-id=${{ steps.ios-sim.outputs.device_id }} \
             --dart-define=TEST_MODEL_PATH="$TEST_MODEL_PATH" \
             --dart-define=CI=true
@@ -145,9 +144,8 @@ jobs:
             adb shell pm grant jp.kyoheig3.ai_edge_example android.permission.WRITE_EXTERNAL_STORAGE || true
 
             export TEST_MODEL_PATH=/sdcard/Download/${{ steps.model.outputs.file }}
-            flutter test integration_test \
+            flutter test integration_test/ \
               --timeout 10m \
-              --fail-fast \
               --dart-define=TEST_MODEL_PATH="$TEST_MODEL_PATH" \
               --dart-define=CI=true
 
