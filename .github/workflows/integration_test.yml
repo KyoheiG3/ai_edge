@@ -47,9 +47,10 @@ jobs:
           flutter pub get
 
       - name: Run Integration Tests
+        env:
+          TEST_MODEL_PATH: ${{ steps.model.outputs.path }}
         run: |
           cd example
-          export TEST_MODEL_PATH=${{ steps.model.outputs.path }}
           [ ! -f "$TEST_MODEL_PATH" ] && exit 1
 
           flutter test integration_test/ \
@@ -134,6 +135,8 @@ jobs:
 
       - name: Run Integration Tests
         uses: reactivecircus/android-emulator-runner@1dcd0090116d15e7c562f8db72807de5e036a4ed # v2.34.0
+        env:
+          TEST_MODEL_PATH: /sdcard/Download/${{ steps.model.outputs.file }}
         with:
           api-level: 33
           arch: x86_64
@@ -155,7 +158,6 @@ jobs:
             adb shell pm grant jp.kyoheig3.ai_edge_example android.permission.READ_EXTERNAL_STORAGE || true
             adb shell pm grant jp.kyoheig3.ai_edge_example android.permission.WRITE_EXTERNAL_STORAGE || true
 
-            export TEST_MODEL_PATH=/sdcard/Download/${{ steps.model.outputs.file }}
             flutter test integration_test/ --device-id=emulator-5554 --timeout 10m --dart-define=TEST_MODEL_PATH="$TEST_MODEL_PATH" --dart-define=CI=true
 
       - name: Upload Test Results
