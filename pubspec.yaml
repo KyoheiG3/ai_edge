@@ -1,21 +1,24 @@
 name: ai_edge
-description: "A new Flutter plugin project."
+description: "Flutter plugin for on-device AI inference powered by MediaPipe GenAI. Run large language models directly on iOS and Android with optimized performance."
 version: 0.0.1
 homepage: https://github.com/KyoheiG3/ai_edge
+repository: https://github.com/KyoheiG3/ai_edge
+documentation: https://github.com/KyoheiG3/ai_edge
+issue_tracker: https://github.com/KyoheiG3/ai_edge/issues
 
 environment:
-  sdk: ^3.9.0
-  flutter: ">=3.3.0"
+  sdk: ^3.5.0
+  flutter: ">=3.24.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  plugin_platform_interface: ^2.0.2
+  plugin_platform_interface: ^2.1.8
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
 
 flutter:
   plugin:
