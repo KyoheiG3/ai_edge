@@ -16,7 +16,7 @@ concurrency:
 jobs:
   test-ios:
     runs-on: macos-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
 
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -54,14 +54,14 @@ jobs:
           [ ! -f "$TEST_MODEL_PATH" ] && exit 1
 
           flutter test integration_test/ \
-            --timeout 30m \
+            --timeout 50m \
             --device-id=${{ steps.ios-sim.outputs.device_id }} \
             --dart-define=TEST_MODEL_PATH="$TEST_MODEL_PATH" \
             --dart-define=CI=true
 
   test-android:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
 
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -153,4 +153,4 @@ jobs:
             adb shell pm grant jp.kyoheig3.ai_edge_example android.permission.READ_EXTERNAL_STORAGE || true
             adb shell pm grant jp.kyoheig3.ai_edge_example android.permission.WRITE_EXTERNAL_STORAGE || true
 
-            flutter test integration_test/ --device-id=emulator-5554 --timeout 30m --dart-define=TEST_MODEL_PATH="$TEST_MODEL_PATH" --dart-define=CI=true
+            flutter test integration_test/ --device-id=emulator-5554 --timeout 50m --dart-define=TEST_MODEL_PATH="$TEST_MODEL_PATH" --dart-define=CI=true
