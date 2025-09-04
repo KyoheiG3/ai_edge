@@ -35,27 +35,31 @@ export HF_TOKEN=your_hugging_face_token
 ./scripts/test_local_android.sh
 ```
 
-**Note:** The test scripts will automatically download the required model (~3.14GB) on first run and cache it locally. Android tests require at least 8GB of RAM allocated to the emulator.
+**Note:** The test scripts will automatically download the required model (~3.14GB) to the `.models/` directory in the project root on first run. Android tests require at least 8GB of RAM allocated to the emulator. The `.models/` directory is git-ignored to prevent committing large files.
 
-Or manually:
+Or manually (from repository root):
 
 1. Set up Hugging Face access token:
    ```bash
    export HF_TOKEN=your_hugging_face_token
    ```
    
-2. Download the test model:
+2. Download the test model (from repository root):
    ```bash
    ./scripts/download_test_model.sh
+   # This will download to ./.models/ in the repository root
    ```
 
 3. Run integration tests:
    ```bash
+   # From repository root, navigate to example directory
    cd example
-   export TEST_MODEL_PATH=$(realpath ~/models/gemma-3n-E2B-it-int4.task)
+   
+   # Reference the model in the parent directory's .models folder
+   export TEST_MODEL_PATH=$(realpath ../.models/gemma-3n-E2B-it-int4.task)
+   
    flutter test integration_test \
      --dart-define=TEST_MODEL_PATH="$TEST_MODEL_PATH" \
-     --dart-define=HF_TOKEN="$HF_TOKEN" \
      --dart-define=CI=true
    ```
 

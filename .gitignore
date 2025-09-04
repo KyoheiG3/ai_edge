@@ -12,6 +12,9 @@
 .swiftpm/
 migrate_working_dir/
 
+# Test models (large files)
+.models/
+
 # IntelliJ related
 *.iml
 *.ipr
