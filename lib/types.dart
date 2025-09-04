@@ -13,25 +13,25 @@
 /// ```
 enum PreferredBackend {
   /// Unknown or unspecified backend.
-  /// 
+  ///
   /// The system will automatically select an appropriate backend.
   unknown(0),
-  
+
   /// CPU-based inference.
-  /// 
+  ///
   /// Uses the device's CPU for model execution. This is more compatible
   /// but generally slower than GPU inference.
   cpu(1),
-  
+
   /// GPU-based inference.
-  /// 
+  ///
   /// Uses the device's GPU for accelerated model execution. Provides
   /// better performance for supported models and devices.
   gpu(2);
 
   /// The numeric value representing this backend type.
   final int value;
-  
+
   const PreferredBackend(this.value);
 }
 
@@ -67,27 +67,27 @@ class ModelConfig {
   /// MediaPipe GenAI runtime. The file should be accessible and readable
   /// by the application.
   final String modelPath;
-  
+
   /// Maximum number of tokens the model can generate in a single response.
   ///
   /// This value should be set based on the model's training configuration
   /// and memory constraints. Typical values range from 256 to 2048.
   final int maxTokens;
-  
+
   /// Supported LoRA (Low-Rank Adaptation) ranks for model customization.
   ///
   /// LoRA allows efficient fine-tuning of large models by training only
   /// low-rank decomposition matrices. Specify the ranks your LoRA adapters
   /// support, e.g., [4, 8, 16].
   final List<int>? supportedLoraRanks;
-  
+
   /// Preferred hardware backend for model inference (Android only).
   ///
   /// Specifies whether to use CPU or GPU for computation on Android devices.
   /// This setting is ignored on iOS.
   /// If not specified, the system automatically selects the best available backend.
   final PreferredBackend? preferredBackend;
-  
+
   /// Maximum number of images that can be processed in multi-modal inference.
   ///
   /// For vision-language models, this parameter enables image input support
@@ -166,53 +166,53 @@ class SessionConfig {
   /// Range: 0.0 to 1.0 (MediaPipe GenAI constraint)
   /// - Lower values (e.g., 0.2): More deterministic, focused responses
   /// - Higher values (e.g., 0.8-1.0): More creative, diverse responses
-  /// 
+  ///
   /// Default: 0.8
   final double temperature;
-  
+
   /// Random seed for reproducible text generation.
   ///
   /// Using the same seed with identical inputs will produce the same outputs,
   /// useful for testing and debugging. Set to a different value or use
   /// timestamps for varied outputs.
-  /// 
+  ///
   /// Default: 1
   final int randomSeed;
-  
+
   /// Top-K sampling parameter.
   ///
   /// Limits the vocabulary to the K most likely next tokens at each step.
   /// Lower values increase focus but may reduce creativity.
-  /// 
+  ///
   /// Range: Must be > 1 (typically 10-100)
   /// Default: 40
   final int topK;
-  
+
   /// Top-P (nucleus) sampling parameter.
   ///
   /// Dynamically selects the smallest set of tokens whose cumulative
   /// probability exceeds this threshold. Provides a balance between
   /// diversity and quality.
-  /// 
+  ///
   /// Range: 0.0 to 1.0 (typically 0.9 to 0.95)
   /// Default: null (not used unless specified)
   final double? topP;
-  
+
   /// Path to a LoRA (Low-Rank Adaptation) adapter file.
   ///
   /// LoRA adapters allow customizing model behavior without modifying
   /// the base model. The adapter should be compatible with the loaded
   /// model's architecture and trained for specific tasks or styles.
-  /// 
+  ///
   /// Default: null (no LoRA adapter)
   final String? loraPath;
-  
+
   /// Enables vision modality for multi-modal models.
   ///
   /// When enabled, the model can process both text and image inputs.
   /// Requires a model trained with vision capabilities and proper
   /// configuration of [ModelConfig.maxNumImages].
-  /// 
+  ///
   /// Default: null (auto-detected based on model)
   final bool? enableVisionModality;
 
@@ -274,11 +274,11 @@ class SessionConfig {
 /// ```dart
 /// final stream = aiEdge.generateResponseAsync('Tell me a story');
 /// final fullText = StringBuffer();
-/// 
+///
 /// await for (final event in stream) {
 ///   // Process partial result
 ///   fullText.write(event.partialResult);
-///   
+///
 ///   // Check if generation is complete
 ///   if (event.done) {
 ///     print('Final response: ${fullText.toString()}');
@@ -302,7 +302,7 @@ class GenerationEvent {
   /// generated in this event. The complete response is built by
   /// concatenating all partial results.
   final String partialResult;
-  
+
   /// Indicates whether text generation has completed.
   ///
   /// When `true`, this is the final event in the stream and [partialResult]

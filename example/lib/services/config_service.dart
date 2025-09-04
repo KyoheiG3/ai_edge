@@ -48,8 +48,6 @@ class ConfigService {
     final token = await getHuggingFaceToken();
     if (token == null || token.isEmpty) return null;
 
-    return {
-      'Authorization': 'Bearer $token',
-    };
+    return {'Authorization': 'Bearer $token'};
   }
 }

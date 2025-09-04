@@ -295,7 +295,7 @@ class AiEdge {
   /// await for (final event in stream) {
   ///   buffer.write(event.partialResult);
   ///   print('Partial: ${event.partialResult}');
-  ///   
+  ///
   ///   if (event.done) {
   ///     print('Generation completed!');
   ///     print('Full response: ${buffer.toString()}');

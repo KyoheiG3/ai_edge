@@ -24,7 +24,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _loadSettings() async {
     final token = await _configService.getHuggingFaceToken();
     final isEnabled = await _configService.isTokenEnabled();
-    
+
     setState(() {
       _tokenController.text = token ?? '';
       _isTokenEnabled = isEnabled;
@@ -34,15 +34,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _saveSettings() async {
     final token = _tokenController.text.trim();
-    
+
     if (token.isNotEmpty) {
       await _configService.saveHuggingFaceToken(token);
     } else {
       await _configService.removeHuggingFaceToken();
     }
-    
+
     await _configService.setTokenEnabled(_isTokenEnabled);
-    
+
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Settings saved successfully')),
@@ -104,7 +104,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 children: [
                                   const Text(
                                     'API Token',
-                                    style: TextStyle(fontWeight: FontWeight.bold),
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                   const SizedBox(height: 8),
                                   TextFormField(
@@ -112,7 +114,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                     obscureText: !_showToken,
                                     decoration: InputDecoration(
                                       hintText: 'Enter your HuggingFace token',
-                                      helperText: 'Get your token from huggingface.co/settings/tokens',
+                                      helperText:
+                                          'Get your token from huggingface.co/settings/tokens',
                                       helperMaxLines: 2,
                                       border: const OutlineInputBorder(),
                                       suffixIcon: IconButton(

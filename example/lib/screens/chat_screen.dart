@@ -225,8 +225,9 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
                 const SizedBox(width: 8),
                 IconButton(
-                  onPressed:
-                      _isModelLoaded && !_isGenerating ? _sendMessage : null,
+                  onPressed: _isModelLoaded && !_isGenerating
+                      ? _sendMessage
+                      : null,
                   icon: _isGenerating
                       ? const SizedBox(
                           width: 24,
@@ -258,8 +259,9 @@ class _MessageBubble extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
-        mainAxisAlignment:
-            isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: isUser
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
         children: [
           if (!isUser) ...[
             CircleAvatar(
@@ -281,8 +283,8 @@ class _MessageBubble extends StatelessWidget {
                 color: isUser
                     ? Theme.of(context).colorScheme.primary
                     : isSystem
-                        ? Colors.grey.shade200
-                        : Theme.of(context).colorScheme.primaryContainer,
+                    ? Colors.grey.shade200
+                    : Theme.of(context).colorScheme.primaryContainer,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Text(
