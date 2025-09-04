@@ -92,4 +92,9 @@ class GenerationEvent {
       done: map['done'] as bool? ?? false,
     );
   }
+
+  @override
+  String toString() {
+    return 'GenerationEvent(partialResult: $partialResult, done: $done)';
+  }
 }

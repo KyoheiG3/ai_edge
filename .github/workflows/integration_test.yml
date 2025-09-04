@@ -1,0 +1,159 @@
+name: Integration Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-ios:
+    runs-on: macos-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - name: Setup Mise
+        uses: jdx/mise-action@5ac50f778e26fac95da98d50503682459e86d566 # v3.2.0
+        with:
+          install: true
+          cache: true
+
+      - name: Setup Test Model
+        id: model
+        uses: ./.github/actions/setup-model
+        with:
+          hf-token: ${{ secrets.HF_TOKEN }}
+
+      - name: Start iOS Simulator
+        id: ios-sim
+        run: |
+          DEVICE_ID=$(xcrun simctl list devices | grep "iPhone 16 Pro" | head -1 | grep -oE '[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}')
+          xcrun simctl boot $DEVICE_ID || true
+          xcrun simctl bootstatus $DEVICE_ID
+          echo "device_id=$DEVICE_ID" >> $GITHUB_OUTPUT
+
+      - name: Install Dependencies
+        run: |
+          cd example
+          flutter pub get
+
+      - name: Run Integration Tests
+        run: |
+          cd example
+          export TEST_MODEL_PATH=${{ steps.model.outputs.path }}
+          [ ! -f "$TEST_MODEL_PATH" ] && exit 1
+
+          flutter test integration_test \
+            --timeout 10m \
+            --fail-fast \
+            --device-id=${{ steps.ios-sim.outputs.device_id }} \
+            --dart-define=TEST_MODEL_PATH="$TEST_MODEL_PATH" \
+            --dart-define=CI=true
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ios-test-results
+          path: example/test_results/
+
+  test-android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - name: Setup Mise
+        uses: jdx/mise-action@5ac50f778e26fac95da98d50503682459e86d566 # v3.2.0
+        with:
+          install: true
+          cache: true
+
+      - name: Setup Test Model
+        id: model
+        uses: ./.github/actions/setup-model
+        with:
+          hf-token: ${{ secrets.HF_TOKEN }}
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: AVD cache
+        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-33-x86_64
+
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost "$AGENT_TOOLSDIRECTORY"
+
+      - name: Create AVD and generate snapshot for caching
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@1dcd0090116d15e7c562f8db72807de5e036a4ed # v2.34.0
+        with:
+          api-level: 33
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -memory 8192 -partition-size 8192
+          disable-animations: true
+          disk-size: 8192M
+          script: echo "Generated AVD snapshot for caching."
+
+      - name: Install Dependencies
+        run: |
+          cd example
+          flutter pub get
+
+      - name: Run Integration Tests
+        uses: reactivecircus/android-emulator-runner@1dcd0090116d15e7c562f8db72807de5e036a4ed # v2.34.0
+        with:
+          api-level: 33
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -memory 8192 -partition-size 8192
+          disable-animations: true
+          disk-size: 8192M
+          script: |
+            adb wait-for-device
+            adb shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done;'
+
+            adb shell mkdir -p /sdcard/Download/
+            adb push ${{ steps.model.outputs.path }} /sdcard/Download/
+
+            cd ${{ github.workspace }}/example
+            flutter build apk --debug
+            adb install -r build/app/outputs/flutter-apk/app-debug.apk
+
+            adb shell pm grant jp.kyoheig3.ai_edge_example android.permission.READ_EXTERNAL_STORAGE || true
+            adb shell pm grant jp.kyoheig3.ai_edge_example android.permission.WRITE_EXTERNAL_STORAGE || true
+
+            export TEST_MODEL_PATH=/sdcard/Download/${{ steps.model.outputs.file }}
+            flutter test integration_test \
+              --timeout 10m \
+              --fail-fast \
+              --dart-define=TEST_MODEL_PATH="$TEST_MODEL_PATH" \
+              --dart-define=CI=true
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: android-test-results
+          path: example/test_results/

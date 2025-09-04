@@ -286,6 +286,53 @@ void main() {
     });
 
     group('generateResponseAsync', () {
+      group('when stream events arrive in order', () {
+        test('then partial events come before done event', () async {
+          // Given
+          mockPlatform = MockAiEdgePlatform();
+          AiEdgePlatform.instance = mockPlatform;
+          aiEdge = AiEdge.instance;
+
+          // When
+          final stream = aiEdge.generateResponseAsync();
+          final events = await stream.toList();
+
+          // Then - validate event ordering
+          var foundDone = false;
+          for (final event in events) {
+            if (event.done) {
+              foundDone = true;
+            } else if (foundDone) {
+              fail('Received partial event after done event');
+            }
+          }
+          expect(foundDone, isTrue, reason: 'Should have a done event');
+        });
+      });
+
+      group('when accumulating partial results', () {
+        test('then complete text is built correctly', () async {
+          // Given
+          mockPlatform = MockAiEdgePlatform();
+          AiEdgePlatform.instance = mockPlatform;
+          aiEdge = AiEdge.instance;
+
+          // When
+          final stream = aiEdge.generateResponseAsync();
+          final events = await stream.toList();
+          
+          // Accumulate partial results
+          String accumulated = '';
+          for (final event in events) {
+            if (!event.done) {
+              accumulated += event.partialResult;
+            }
+          }
+
+          // Then
+          expect(accumulated, equals('Hello World'));
+        });
+      });
       group('when called without prompt', () {
         test('then stream of events is returned', () async {
           // Given
@@ -355,6 +402,28 @@ void main() {
           expect(events.length, equals(3));
           // Verify stream completed successfully
           expect(events.last.done, isTrue);
+        });
+      });
+      
+      group('when validating streaming response', () {
+        test('then should have partial results before done', () async {
+          // Given
+          mockPlatform = MockAiEdgePlatform();
+          AiEdgePlatform.instance = mockPlatform;
+          aiEdge = AiEdge.instance;
+
+          // When
+          final stream = aiEdge.generateResponseAsync();
+          final events = await stream.toList();
+
+          // Then
+          final hasPartialResults = events.any((e) => !e.done);
+          expect(hasPartialResults, isTrue, 
+            reason: 'Streaming should include partial results');
+          
+          final hasComplete = events.any((e) => e.done);
+          expect(hasComplete, isTrue,
+            reason: 'Streaming should end with a complete result');
         });
       });
     });
