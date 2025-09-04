@@ -156,11 +156,7 @@ jobs:
             adb shell pm grant jp.kyoheig3.ai_edge_example android.permission.WRITE_EXTERNAL_STORAGE || true
 
             export TEST_MODEL_PATH=/sdcard/Download/${{ steps.model.outputs.file }}
-            flutter test integration_test/ \
-              --device-id=emulator-5554 \
-              --timeout 10m \
-              --dart-define=TEST_MODEL_PATH="$TEST_MODEL_PATH" \
-              --dart-define=CI=true
+            flutter test integration_test/ --device-id=emulator-5554 --timeout 10m --dart-define=TEST_MODEL_PATH="$TEST_MODEL_PATH" --dart-define=CI=true
 
       - name: Upload Test Results
         if: always()
