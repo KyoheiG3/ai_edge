@@ -25,8 +25,6 @@ def download_model(repo_id, filename, output_path, token):
             repo_id=repo_id,
             filename=filename,
             cache_dir=str(cache_dir),
-            force_download=False,
-            resume_download=True,
             token=token
         )
         

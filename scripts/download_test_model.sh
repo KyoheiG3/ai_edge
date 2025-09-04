@@ -7,11 +7,12 @@ set -e
 
 # Load model configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/../.github/workflows/model.env"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+source "$PROJECT_ROOT/.github/workflows/model.env"
 MODEL_REPO="google/gemma-3n-E2B-it-litert-preview"
 
-# Output directory (default to ~/models)
-OUTPUT_DIR="${1:-$HOME/models}"
+# Output directory (default to project .models directory)
+OUTPUT_DIR="${1:-$PROJECT_ROOT/.models}"
 OUTPUT_FILE="$OUTPUT_DIR/$MODEL_FILE"
 
 # Create output directory
