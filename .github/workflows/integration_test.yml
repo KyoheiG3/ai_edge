@@ -137,7 +137,7 @@ jobs:
             adb shell mkdir -p /sdcard/Download/
             adb push ${{ steps.model.outputs.path }} /sdcard/Download/
 
-            cd ${{ github.workspace }}/example
+            cd example
             flutter build apk --debug
             adb install -r build/app/outputs/flutter-apk/app-debug.apk
 
