@@ -130,6 +130,7 @@ jobs:
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -memory 8192 -partition-size 8192
           disable-animations: true
           disk-size: 8192M
+          working-directory: ./example
           script: |
             adb wait-for-device
             adb shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done;'
@@ -137,7 +138,6 @@ jobs:
             adb shell mkdir -p /sdcard/Download/
             adb push ${{ steps.model.outputs.path }} /sdcard/Download/
 
-            cd example
             flutter build apk --debug
             adb install -r build/app/outputs/flutter-apk/app-debug.apk
 
