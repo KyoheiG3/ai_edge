@@ -7,8 +7,8 @@ documentation: https://github.com/KyoheiG3/ai_edge
 issue_tracker: https://github.com/KyoheiG3/ai_edge/issues
 
 environment:
-  sdk: ^3.5.0
-  flutter: ">=3.24.0"
+  sdk: ^3.8.0
+  flutter: ">=3.32.0"
 
 dependencies:
   flutter:
