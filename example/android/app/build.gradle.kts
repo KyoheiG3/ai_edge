@@ -8,7 +8,7 @@ plugins {
 android {
     namespace = "jp.kyoheig3.ai_edge_example"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "27.0.12077973"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
