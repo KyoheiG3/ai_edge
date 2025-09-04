@@ -156,16 +156,14 @@ jobs:
             adb shell pm grant jp.kyoheig3.ai_edge_example android.permission.WRITE_EXTERNAL_STORAGE || true
 
             export TEST_MODEL_PATH=/sdcard/Download/${{ steps.model.outputs.file }}
-            
+
             # Get the emulator device ID
             adb devices
             DEVICE_ID=$(adb devices | grep -E "emulator|^[0-9].*device$" | head -1 | awk '{print $1}')
-            
+
             # Fallback to default if not found
-            if [ -z "$DEVICE_ID" ]; then
-              DEVICE_ID="emulator-5554"
-            fi
-            
+            [ -z "$DEVICE_ID" ] && DEVICE_ID="emulator-5554"
+
             echo "Using device: $DEVICE_ID"
             flutter test integration_test/ \
               --device-id=$DEVICE_ID \
