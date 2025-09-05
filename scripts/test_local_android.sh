@@ -65,10 +65,9 @@ adb shell chmod 644 /data/local/tmp/$MODEL_FILE
 echo "🧪 Running integration tests..."
 echo "   Model path in emulator: /data/local/tmp/$MODEL_FILE"
 echo
-flutter test integration_test \
+flutter test integration_test/ \
   --device-id emulator-5554 \
   --timeout 5m \
-  --fail-fast \
   --dart-define=TEST_MODEL_PATH="/data/local/tmp/$MODEL_FILE" \
   --dart-define=CI=true
 

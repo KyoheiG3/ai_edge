@@ -35,9 +35,8 @@ echo "🍎 Running iOS tests..."
 cd example
 
 # Run iOS tests (flutter will automatically select an iOS simulator)
-flutter test integration_test \
+flutter test integration_test/ \
   --timeout 5m \
-  --fail-fast \
   --dart-define=TEST_MODEL_PATH="$MODEL_PATH" \
   --dart-define=CI=true
 

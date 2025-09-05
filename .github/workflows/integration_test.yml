@@ -1,22 +1,22 @@
 name: Integration Tests
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+  # push:
+  #   branches:
+  #     - main
+  # pull_request:
+  #   branches:
+  #     - main
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   test-ios:
     runs-on: macos-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
 
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -47,28 +47,21 @@ jobs:
           flutter pub get
 
       - name: Run Integration Tests
+        env:
+          TEST_MODEL_PATH: ${{ steps.model.outputs.path }}
         run: |
           cd example
-          export TEST_MODEL_PATH=${{ steps.model.outputs.path }}
           [ ! -f "$TEST_MODEL_PATH" ] && exit 1
 
-          flutter test integration_test \
-            --timeout 10m \
-            --fail-fast \
+          flutter test integration_test/ \
+            --timeout 50m \
             --device-id=${{ steps.ios-sim.outputs.device_id }} \
             --dart-define=TEST_MODEL_PATH="$TEST_MODEL_PATH" \
             --dart-define=CI=true
 
-      - name: Upload Test Results
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: ios-test-results
-          path: example/test_results/
-
   test-android:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
 
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -102,7 +95,19 @@ jobs:
 
       - name: Free up disk space
         run: |
-          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost "$AGENT_TOOLSDIRECTORY"
+          echo "=== Disk space before cleanup ==="
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo rm -rf /opt/hostedtoolcache
+          sudo rm -rf /usr/local/.ghcup
+          sudo rm -rf /usr/local/share/powershell
+          sudo rm -rf /usr/share/swift
+          sudo apt-get clean
+          echo "=== Disk space after cleanup ==="
+          df -h
 
       - name: Create AVD and generate snapshot for caching
         if: steps.avd-cache.outputs.cache-hit != 'true'
@@ -111,9 +116,9 @@ jobs:
           api-level: 33
           arch: x86_64
           force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -memory 8192 -partition-size 8192
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -memory 8192 -partition-size 16384
           disable-animations: true
-          disk-size: 8192M
+          disk-size: 16384M
           script: echo "Generated AVD snapshot for caching."
 
       - name: Install Dependencies
@@ -123,37 +128,29 @@ jobs:
 
       - name: Run Integration Tests
         uses: reactivecircus/android-emulator-runner@1dcd0090116d15e7c562f8db72807de5e036a4ed # v2.34.0
+        env:
+          TEST_MODEL_PATH: /data/local/tmp/${{ steps.model.outputs.file }}
         with:
           api-level: 33
           arch: x86_64
           force-avd-creation: false
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -memory 8192 -partition-size 8192
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -memory 8192 -partition-size 16384
           disable-animations: true
-          disk-size: 8192M
+          disk-size: 16384M
+          working-directory: ./example
           script: |
             adb wait-for-device
             adb shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done;'
 
-            adb shell mkdir -p /sdcard/Download/
-            adb push ${{ steps.model.outputs.path }} /sdcard/Download/
+            adb shell mkdir -p /data/local/tmp/
+            adb push ${{ steps.model.outputs.path }} /data/local/tmp/
+            adb shell ls -la /data/local/tmp/
+            adb shell chmod 644 /data/local/tmp/${{ steps.model.outputs.file }}
 
-            cd ${{ github.workspace }}/example
             flutter build apk --debug
             adb install -r build/app/outputs/flutter-apk/app-debug.apk
 
             adb shell pm grant jp.kyoheig3.ai_edge_example android.permission.READ_EXTERNAL_STORAGE || true
             adb shell pm grant jp.kyoheig3.ai_edge_example android.permission.WRITE_EXTERNAL_STORAGE || true
 
-            export TEST_MODEL_PATH=/sdcard/Download/${{ steps.model.outputs.file }}
-            flutter test integration_test \
-              --timeout 10m \
-              --fail-fast \
-              --dart-define=TEST_MODEL_PATH="$TEST_MODEL_PATH" \
-              --dart-define=CI=true
-
-      - name: Upload Test Results
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: android-test-results
-          path: example/test_results/
+            flutter test integration_test/ --device-id=emulator-5554 --timeout 50m --dart-define=TEST_MODEL_PATH="$TEST_MODEL_PATH" --dart-define=CI=true

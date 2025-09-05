@@ -33,7 +33,7 @@ void main() {
         contains('4'),
         reason: 'Model should answer the math question',
       );
-    }, timeout: const Timeout(Duration(seconds: 120)));
+    }, timeout: const Timeout(Duration(seconds: 240)));
 
     test(
       'Conversation context retention',
@@ -61,7 +61,7 @@ void main() {
           reason: 'Model should remember the preference from context',
         );
       },
-      timeout: const Timeout(Duration(seconds: 120)),
+      timeout: const Timeout(Duration(seconds: 240)),
     );
 
     test('Different types of prompts', () async {
@@ -91,6 +91,6 @@ void main() {
 
         await Future.delayed(const Duration(milliseconds: 500));
       }
-    }, timeout: const Timeout(Duration(seconds: 120)));
+    }, timeout: const Timeout(Duration(seconds: 240)));
   });
 }

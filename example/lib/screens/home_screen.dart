@@ -93,21 +93,25 @@ class _HomeScreenState extends State<HomeScreen> {
         _isDownloading[model.id] = false;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${model.name} downloaded successfully')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${model.name} downloaded successfully')),
+        );
+      }
     } catch (e) {
       setState(() {
         _isDownloading[model.id] = false;
         _downloadProgress[model.id] = null;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to download ${model.name}: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to download ${model.name}: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -135,21 +139,24 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         _downloadedModels[model.id] = false;
       });
-
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('${model.name} deleted')));
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('${model.name} deleted')));
+      }
     }
   }
 
   void _openChat(GemmaModel model) async {
     final modelPath = await _downloadService.getModelPath(model);
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ChatScreen(model: model, modelPath: modelPath),
-      ),
-    );
+    if (mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ChatScreen(model: model, modelPath: modelPath),
+        ),
+      );
+    }
   }
 
   @override

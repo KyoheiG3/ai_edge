@@ -147,15 +147,22 @@ await aiEdge.initialize(
 
 ### Android Requirements
 
-- Android API level 24 (Android 7.0) or later
+- **Minimum SDK**: Android API level 24 (Android 7.0) or later
+  - This is a requirement from MediaPipe GenAI SDK
+  - Flutter's default minSdkVersion is 21, so you **must** update it
+
 - Add to your `android/app/build.gradle`:
   ```gradle
   android {
     defaultConfig {
-        minSdkVersion 24
+        minSdkVersion 24  // Required by MediaPipe GenAI
     }
   }
   ```
+
+- **Recommended Devices**: 
+  - Optimal performance on Pixel 7 or newer
+  - Other high-end Android devices with comparable specs
 
 - For large models, you may need to increase heap size in `android/app/src/main/AndroidManifest.xml`:
   ```xml
