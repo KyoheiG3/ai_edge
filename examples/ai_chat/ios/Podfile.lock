@@ -3,6 +3,8 @@ PODS:
     - Flutter
     - MediaPipeTasksGenAI (= 0.10.24)
     - MediaPipeTasksGenAIC (= 0.10.24)
+  - ai_edge_fc (0.0.1):
+    - Flutter
   - Flutter (1.0.0)
   - integration_test (0.0.1):
     - Flutter
@@ -18,6 +20,7 @@ PODS:
 
 DEPENDENCIES:
   - ai_edge (from `.symlinks/plugins/ai_edge/ios`)
+  - ai_edge_fc (from `.symlinks/plugins/ai_edge_fc/ios`)
   - Flutter (from `Flutter`)
   - integration_test (from `.symlinks/plugins/integration_test/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
@@ -31,6 +34,8 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   ai_edge:
     :path: ".symlinks/plugins/ai_edge/ios"
+  ai_edge_fc:
+    :path: ".symlinks/plugins/ai_edge_fc/ios"
   Flutter:
     :path: Flutter
   integration_test:
@@ -42,7 +47,8 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   ai_edge: 727e35faa360faf9b6fc71937efda5f348c222d6
-  Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
+  ai_edge_fc: 1a1ca621c4d73aa789d620a4afad0ec50f48f34a
+  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   integration_test: 4a889634ef21a45d28d50d622cf412dc6d9f586e
   MediaPipeTasksGenAI: 076ba7032a6e9da16db9c7cf0c3b67c751c18bc1
   MediaPipeTasksGenAIC: ec35d9f431f6a6b651a0bc9f67a4ed149ffa575c
