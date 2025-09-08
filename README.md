@@ -264,6 +264,25 @@ flutter run
 
 ### Running Tests
 
+#### Setting up Hugging Face Token
+
+Some integration tests download models from Hugging Face and require authentication:
+
+```bash
+# Set your Hugging Face token as an environment variable
+export HF_TOKEN="your_hugging_face_token_here"
+
+# Or pass it directly when running tests
+HF_TOKEN="your_token" ./scripts/test_local_ios.sh
+```
+
+To get a Hugging Face token:
+1. Create an account at [huggingface.co](https://huggingface.co)
+2. Go to Settings → Access Tokens
+3. Create a new token with read permissions
+
+#### Running Test Scripts
+
 Quick test commands:
 ```bash
 # iOS (macOS only)
