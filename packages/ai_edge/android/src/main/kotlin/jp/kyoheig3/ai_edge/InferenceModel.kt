@@ -1,13 +1,7 @@
 package jp.kyoheig3.ai_edge
 
 import android.content.Context
-import android.graphics.BitmapFactory
-import com.google.common.util.concurrent.ListenableFuture
-import com.google.mediapipe.framework.image.BitmapImageBuilder
-import com.google.mediapipe.tasks.genai.llminference.GraphOptions
 import com.google.mediapipe.tasks.genai.llminference.LlmInference
-import com.google.mediapipe.tasks.genai.llminference.LlmInferenceSession
-import com.google.mediapipe.tasks.genai.llminference.ProgressListener
 import java.io.File
 
 enum class PreferredBackend(val value: Int) {
@@ -16,17 +10,14 @@ enum class PreferredBackend(val value: Int) {
     GPU(2),
 }
 
-class InferenceModel(
-    context: Context,
-    modelPath: String,
-    maxTokens: Int,
-    supportedLoraRanks: List<Int>?,
-    maxNumImages: Int?,
-    preferredBackend: PreferredBackend?,
+data class InferenceModelOptions(
+    val modelPath: String,
+    val maxTokens: Int,
+    val supportedLoraRanks: List<Int>? = null,
+    val maxNumImages: Int? = null,
+    val preferredBackend: PreferredBackend? = null
 ) {
-    val inference: LlmInference
-
-    init {
+    fun build(): LlmInference.LlmInferenceOptions {
         if (!File(modelPath).exists()) {
             throw IllegalArgumentException("Model not found at path: $modelPath")
         }
@@ -44,68 +35,45 @@ class InferenceModel(
             builder.setPreferredBackend(backendEnum)
         }
 
-        inference = LlmInference.createFromOptions(context, builder.build())
+        return builder.build()
     }
 
-    fun close() {
-        inference.close()
+    companion object {
+        fun fromArgs(arguments: Map<*, *>): InferenceModelOptions {
+            val modelPath = arguments["modelPath"] as? String
+                ?: throw IllegalArgumentException("Missing modelPath")
+
+            val maxTokens = (arguments["maxTokens"] as? Number)?.toInt()
+                ?: throw IllegalArgumentException("Missing maxTokens")
+
+            val supportedLoraRanks = (arguments["loraRanks"] as? List<*>)
+                ?.mapNotNull { (it as? Number)?.toInt() }
+                ?.takeIf { it.isNotEmpty() }
+
+            val maxNumImages = (arguments["maxNumImages"] as? Number)?.toInt()
+
+            val preferredBackend = (arguments["preferredBackend"] as? Number)?.toInt()?.let {
+                PreferredBackend.entries.getOrNull(it)
+            }
+
+            return InferenceModelOptions(
+                modelPath = modelPath,
+                maxTokens = maxTokens,
+                supportedLoraRanks = supportedLoraRanks,
+                maxNumImages = maxNumImages,
+                preferredBackend = preferredBackend
+            )
+        }
     }
 }
 
-class InferenceSession(
-    llmInference: LlmInference,
-    temperature: Float,
-    randomSeed: Int,
-    topK: Int,
-    topP: Float?,
-    loraPath: String?,
-    enableVisionModality: Boolean?,
+class InferenceModel(
+    context: Context,
+    options: InferenceModelOptions
 ) {
-    private val session: LlmInferenceSession
-
-    init {
-        val builder = LlmInferenceSession.LlmInferenceSessionOptions.builder()
-            .setTemperature(temperature)
-            .setRandomSeed(randomSeed)
-            .setTopK(topK)
-
-        topP?.let { builder.setTopP(it) }
-        loraPath?.let { builder.setLoraPath(it) }
-        enableVisionModality?.let {
-            builder.setGraphOptions(
-                GraphOptions.builder()
-                    .setEnableVisionModality(it)
-                    .build()
-            )
-        }
-
-        session = LlmInferenceSession.createFromOptions(llmInference, builder.build())
-    }
-
-    fun addQueryChunk(prompt: String) = session.addQueryChunk(prompt)
-
-    fun addImage(imageBytes: ByteArray) {
-        val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-            ?: throw IllegalArgumentException("Failed to decode image bytes")
-        val mpImage = BitmapImageBuilder(bitmap).build()
-        session.addImage(mpImage)
-    }
-
-    fun generateResponse(prompt: String?): String {
-        if (prompt != null) {
-            session.addQueryChunk(prompt)
-        }
-        return session.generateResponse()
-    }
-
-    fun generateResponseAsync(prompt: String?, progressListener: ProgressListener<String>): ListenableFuture<String> {
-        if (prompt != null) {
-            session.addQueryChunk(prompt)
-        }
-        return session.generateResponseAsync(progressListener)
-    }
+    val inference: LlmInference = LlmInference.createFromOptions(context, options.build())
 
     fun close() {
-        session.close()
+        inference.close()
     }
 }

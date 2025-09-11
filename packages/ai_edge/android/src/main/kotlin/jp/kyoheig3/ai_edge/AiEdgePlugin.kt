@@ -10,27 +10,6 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import kotlinx.coroutines.*
 
-sealed class CallError(override val message: String) : Exception(message) {
-    data class Unknown(val msg: String) : CallError(msg)
-    data class CreateModel(val msg: String) : CallError(msg)
-    data class CreateSession(val msg: String) : CallError(msg)
-    data class AddQueryChunk(val msg: String) : CallError(msg)
-    data class AddImage(val msg: String) : CallError(msg)
-    data class GenerateResponse(val msg: String) : CallError(msg)
-    data class GenerateResponseAsync(val msg: String) : CallError(msg)
-    
-    val code: String
-        get() = when (this) {
-            is Unknown -> "UNKNOWN_ERROR"
-            is CreateModel -> "CREATE_MODEL_ERROR"
-            is CreateSession -> "CREATE_SESSION_ERROR"
-            is AddQueryChunk -> "ADD_QUERY_CHUNK_ERROR"
-            is AddImage -> "ADD_IMAGE_ERROR"
-            is GenerateResponse -> "GENERATE_RESPONSE_ERROR"
-            is GenerateResponseAsync -> "GENERATE_RESPONSE_ASYNC_ERROR"
-        }
-}
-
 class AiEdgePlugin: FlutterPlugin, MethodCallHandler, EventChannel.StreamHandler {
     private lateinit var methodChannel: MethodChannel
     private lateinit var eventChannel: EventChannel
@@ -87,71 +66,32 @@ class AiEdgePlugin: FlutterPlugin, MethodCallHandler, EventChannel.StreamHandler
     }
 
     private fun handleCreateModel(call: MethodCall) {
-        val modelPath = call.argument<String>("modelPath")
-            ?: throw CallError.CreateModel("Missing modelPath")
-        val maxTokens = (call.argument<Number>("maxTokens")
-            ?: throw CallError.CreateModel("Missing maxTokens")).toInt()
-
-        val loraRanks = call.argument<List<Number>>("loraRanks")?.map { it.toInt() }
-        val maxNumImages = call.argument<Number>("maxNumImages")?.toInt()
-
-        val preferredBackend = call.argument<Number>("preferredBackend")?.toInt()?.let {
-            PreferredBackend.entries.getOrNull(it)
-        }
-
         try {
+            val arguments = checkNotNull(call.arguments as? Map<*, *>) { "Invalid arguments format" }
+            val options = InferenceModelOptions.fromArgs(arguments)
             inferenceModel?.close()
-            inferenceModel = InferenceModel(
-                context,
-                modelPath,
-                maxTokens,
-                loraRanks,
-                maxNumImages,
-                preferredBackend,
-            )
+            inferenceModel = InferenceModel(context, options)
         } catch (e: Exception) {
             throw CallError.CreateModel(e.message ?: e.toString())
         }
     }
 
     private fun handleCreateSession(call: MethodCall) {
-        val inference = inferenceModel?.inference
-            ?: throw CallError.CreateSession("Inference model is not created")
-
-        val temperature = call.argument<Number>("temperature")?.toFloat()
-            ?: throw CallError.CreateSession("Missing temperature")
-        val randomSeed = call.argument<Number>("randomSeed")?.toInt()
-            ?: throw CallError.CreateSession("Missing randomSeed")
-        val topK = call.argument<Number>("topK")?.toInt()
-            ?: throw CallError.CreateSession("Missing topK")
-
-        val topP = call.argument<Number>("topP")?.toFloat()
-        val loraPath = call.argument<String>("loraPath")
-        val enableVisionModality = call.argument<Boolean>("enableVisionModality")
-
         try {
+            val inference = checkNotNull(inferenceModel?.inference) { "Inference model is not created" }
+            val arguments = checkNotNull(call.arguments as? Map<*, *>) { "Invalid arguments format" }
+            val options = InferenceSessionOptions.fromArgs(arguments)
             session?.close()
-            session = InferenceSession(
-                inference,
-                temperature,
-                randomSeed,
-                topK,
-                topP,
-                loraPath,
-                enableVisionModality
-            )
+            session = InferenceSession(inference, options)
         } catch (e: Exception) {
             throw CallError.CreateSession(e.message ?: e.toString())
         }
     }
 
     private fun handleAddQueryChunk(call: MethodCall) {
-        val session = session
-            ?: throw CallError.AddQueryChunk("Session not created")
-        val prompt = call.argument<String>("prompt") 
-            ?: throw CallError.AddQueryChunk("Missing prompt")
-
         try {
+            val session = checkNotNull(session) { "Session not created" }
+            val prompt = checkNotNull(call.argument<String>("prompt")) { "Missing prompt" }
             session.addQueryChunk(prompt)
         } catch (e: Exception) {
             throw CallError.AddQueryChunk(e.message ?: e.toString())
@@ -159,12 +99,9 @@ class AiEdgePlugin: FlutterPlugin, MethodCallHandler, EventChannel.StreamHandler
     }
 
     private fun handleAddImage(call: MethodCall) {
-        val session = session 
-            ?: throw CallError.AddImage("Session not created")
-        val imageBytes = call.argument<ByteArray>("imageBytes") 
-            ?: throw CallError.AddImage("Missing imageBytes")
-
         try {
+            val session = checkNotNull(session) { "Session not created" }
+            val imageBytes = checkNotNull(call.argument<ByteArray>("imageBytes")) { "Missing imageBytes" }
             session.addImage(imageBytes)
         } catch (e: Exception) {
             throw CallError.AddImage(e.message ?: e.toString())
@@ -172,10 +109,8 @@ class AiEdgePlugin: FlutterPlugin, MethodCallHandler, EventChannel.StreamHandler
     }
 
     private fun handleGenerateResponse(call: MethodCall): String {
-        val session = session 
-            ?: throw CallError.GenerateResponse("Session not created")
-
         return try {
+            val session = checkNotNull(session) { "Session not created" }
             session.generateResponse(call.argument("prompt"))
         } catch (e: Exception) {
             throw CallError.GenerateResponse(e.message ?: e.toString())
@@ -183,19 +118,20 @@ class AiEdgePlugin: FlutterPlugin, MethodCallHandler, EventChannel.StreamHandler
     }
 
     private fun handleGenerateResponseAsync(call: MethodCall) {
-        val session = session 
-            ?: throw CallError.GenerateResponseAsync("Session not created")
-        val eventSink = eventSink
-            ?: throw CallError.GenerateResponseAsync("Event sink not created")
-
-        session.generateResponseAsync(call.argument("prompt")) { result, done ->
-            val payload = mapOf("partialResult" to result, "done" to done)
-            scope.launch(Dispatchers.Main) {
-                eventSink.success(payload)
-                if (done) {
-                    eventSink.endOfStream()
+        try {
+            val session = checkNotNull(session) { "Session not created" }
+            val eventSink = checkNotNull(eventSink) { "Event sink not created" }
+            session.generateResponseAsync(call.argument("prompt")) { result, done ->
+                val payload = mapOf("partialResult" to result, "done" to done)
+                scope.launch(Dispatchers.Main) {
+                    eventSink.success(payload)
+                    if (done) {
+                        eventSink.endOfStream()
+                    }
                 }
             }
+        } catch (e: Exception) {
+            throw CallError.GenerateResponseAsync(e.message ?: e.toString())
         }
     }
 
