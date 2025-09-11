@@ -36,7 +36,7 @@ jobs:
 
       - name: Test
         run: |
-          cd examples/ai_chat
+          cd packages/ai_edge
           flutter test --coverage
 
       - name: Octocov
