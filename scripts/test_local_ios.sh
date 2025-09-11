@@ -32,7 +32,7 @@ echo "   Size: $(ls -lh $MODEL_PATH | awk '{print $5}')"
 echo
 
 echo "🍎 Running iOS tests..."
-cd example
+cd examples/ai_chat
 
 # Run iOS tests (flutter will automatically select an iOS simulator)
 flutter test integration_test/ \

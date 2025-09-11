@@ -46,7 +46,7 @@ fi
 echo "✅ Android emulator detected:"
 adb devices
 
-cd example
+cd examples/ai_chat
 
 # Build and install app FIRST to create app directories
 echo "🔨 Building app..."
