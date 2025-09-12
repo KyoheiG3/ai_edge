@@ -2,7 +2,7 @@
 coverage:
   if: true
   paths:
-    - packages/ai_edge/coverage/lcov.info
+    - coverage/lcov.info
 testExecutionTime:
   if: true
 diff:
