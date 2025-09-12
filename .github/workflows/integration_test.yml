@@ -150,7 +150,7 @@ jobs:
             flutter build apk --debug
             adb install -r build/app/outputs/flutter-apk/app-debug.apk
 
-            adb shell pm grant jp.kyoheig3.ai_edge_example android.permission.READ_EXTERNAL_STORAGE || true
-            adb shell pm grant jp.kyoheig3.ai_edge_example android.permission.WRITE_EXTERNAL_STORAGE || true
+            adb shell pm grant jp.kyoheig3.ai_chat android.permission.READ_EXTERNAL_STORAGE || true
+            adb shell pm grant jp.kyoheig3.ai_chat android.permission.WRITE_EXTERNAL_STORAGE || true
 
             flutter test integration_test/ --device-id=emulator-5554 --timeout 50m --dart-define=TEST_MODEL_PATH="$TEST_MODEL_PATH" --dart-define=CI=true

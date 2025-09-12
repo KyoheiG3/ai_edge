@@ -1,4 +1,4 @@
-# ai_edge_example
+# ai_chat
 
 Demonstrates how to use the ai_edge plugin.
 
