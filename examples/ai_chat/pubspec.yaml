@@ -1,4 +1,4 @@
-name: ai_edge_example
+name: ai_chat
 description: "Demonstrates how to use the ai_edge plugin."
 version: 1.0.0
 publish_to: "none"
@@ -7,11 +7,12 @@ environment:
   sdk: ^3.8.0
   flutter: ">=3.32.0"
 
+resolution: workspace
+
 dependencies:
   flutter:
     sdk: flutter
   ai_edge:
-    path: ../
   cupertino_icons: ^1.0.8
   http: ^1.5.0
   path_provider: ^2.1.5

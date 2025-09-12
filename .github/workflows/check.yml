@@ -10,6 +10,10 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      actions: read
     steps:
       - name: Make temporary bin dir
         id: temp-bin-dir
@@ -35,7 +39,7 @@ jobs:
           fatal-infos: true
 
       - name: Test
-        run: flutter test --coverage
+        run: flutter test packages/ai_edge --coverage
 
       - name: Octocov
         uses: k1LoW/octocov-action@73d561f65d59e66899ed5c87e4621a913b5d5c20 # v1.5.0
@@ -56,7 +60,7 @@ jobs:
 
       - name: Build Example App
         run: |
-          cd example
+          cd examples/ai_chat
           flutter pub get
           flutter build ios --no-codesign --simulator
 
@@ -74,6 +78,6 @@ jobs:
 
       - name: Build Example App
         run: |
-          cd example
+          cd examples/ai_chat
           flutter pub get
           flutter build apk --debug

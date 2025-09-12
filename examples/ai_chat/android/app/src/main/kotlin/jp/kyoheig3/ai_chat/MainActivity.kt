@@ -1,4 +1,4 @@
-package jp.kyoheig3.ai_edge_example
+package jp.kyoheig3.ai_chat
 
 import io.flutter.embedding.android.FlutterActivity
 

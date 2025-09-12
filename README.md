@@ -246,7 +246,7 @@ Event emitted during streaming generation:
 
 ## Example App
 
-Check out the [example](example/) directory for a complete chat application demonstrating:
+Check out the [examples/ai_chat](examples/ai_chat/) directory for a complete chat application demonstrating:
 
 - Model download and management
 - Real-time streaming responses
@@ -256,7 +256,7 @@ Check out the [example](example/) directory for a complete chat application demo
 
 Run the example:
 ```bash
-cd example
+cd examples/ai_chat
 flutter run
 ```
 

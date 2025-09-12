@@ -1,6 +1,5 @@
 package jp.kyoheig3.ai_edge
 
-import android.content.Context
 import android.graphics.BitmapFactory
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.mediapipe.framework.image.BitmapImageBuilder
@@ -8,62 +7,16 @@ import com.google.mediapipe.tasks.genai.llminference.GraphOptions
 import com.google.mediapipe.tasks.genai.llminference.LlmInference
 import com.google.mediapipe.tasks.genai.llminference.LlmInferenceSession
 import com.google.mediapipe.tasks.genai.llminference.ProgressListener
-import java.io.File
 
-enum class PreferredBackend(val value: Int) {
-    UNKNOWN(0),
-    CPU(1),
-    GPU(2),
-}
-
-class InferenceModel(
-    context: Context,
-    modelPath: String,
-    maxTokens: Int,
-    supportedLoraRanks: List<Int>?,
-    maxNumImages: Int?,
-    preferredBackend: PreferredBackend?,
+data class InferenceSessionOptions(
+    val temperature: Float,
+    val randomSeed: Int,
+    val topK: Int,
+    val topP: Float? = null,
+    val loraPath: String? = null,
+    val enableVisionModality: Boolean? = null
 ) {
-    val inference: LlmInference
-
-    init {
-        if (!File(modelPath).exists()) {
-            throw IllegalArgumentException("Model not found at path: $modelPath")
-        }
-
-        val builder = LlmInference.LlmInferenceOptions.builder()
-            .setModelPath(modelPath)
-            .setMaxTokens(maxTokens)
-
-        supportedLoraRanks?.let { builder.setSupportedLoraRanks(it) }
-        maxNumImages?.let { if (it > 0) builder.setMaxNumImages(it) }
-
-        preferredBackend?.let {
-            val backendEnum = LlmInference.Backend.entries.getOrNull(it.ordinal)
-                ?: throw IllegalArgumentException("Invalid preferredBackend value: ${it.ordinal}")
-            builder.setPreferredBackend(backendEnum)
-        }
-
-        inference = LlmInference.createFromOptions(context, builder.build())
-    }
-
-    fun close() {
-        inference.close()
-    }
-}
-
-class InferenceSession(
-    llmInference: LlmInference,
-    temperature: Float,
-    randomSeed: Int,
-    topK: Int,
-    topP: Float?,
-    loraPath: String?,
-    enableVisionModality: Boolean?,
-) {
-    private val session: LlmInferenceSession
-
-    init {
+    fun build(): LlmInferenceSession.LlmInferenceSessionOptions {
         val builder = LlmInferenceSession.LlmInferenceSessionOptions.builder()
             .setTemperature(temperature)
             .setRandomSeed(randomSeed)
@@ -79,8 +32,42 @@ class InferenceSession(
             )
         }
 
-        session = LlmInferenceSession.createFromOptions(llmInference, builder.build())
+        return builder.build()
     }
+
+    companion object {
+        fun fromArgs(arguments: Map<*, *>): InferenceSessionOptions {
+            val temperature = (arguments["temperature"] as? Number)?.toFloat()
+                ?: throw IllegalArgumentException("Missing temperature")
+            
+            val randomSeed = (arguments["randomSeed"] as? Number)?.toInt()
+                ?: throw IllegalArgumentException("Missing randomSeed")
+            
+            val topK = (arguments["topK"] as? Number)?.toInt()
+                ?: throw IllegalArgumentException("Missing topK")
+            
+            val topP = (arguments["topP"] as? Number)?.toFloat()
+            val loraPath = arguments["loraPath"] as? String
+            val enableVisionModality = arguments["enableVisionModality"] as? Boolean
+            
+            return InferenceSessionOptions(
+                temperature = temperature,
+                randomSeed = randomSeed,
+                topK = topK,
+                topP = topP,
+                loraPath = loraPath,
+                enableVisionModality = enableVisionModality
+            )
+        }
+    }
+}
+
+class InferenceSession(
+    llmInference: LlmInference,
+    options: InferenceSessionOptions
+) {
+    private val session: LlmInferenceSession = 
+        LlmInferenceSession.createFromOptions(llmInference, options.build())
 
     fun addQueryChunk(prompt: String) = session.addQueryChunk(prompt)
 
