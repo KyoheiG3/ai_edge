@@ -98,7 +98,7 @@ class AiEdge {
   /// ));
   /// ```
   Future<void> createModel(ModelConfig config) {
-    return AiEdgePlatform.instance.createModel(config);
+    return AiEdgePlatform.instance.createModel(config.toMap());
   }
 
   /// Creates a new inference session with the specified configuration.
@@ -125,7 +125,7 @@ class AiEdge {
   /// ));
   /// ```
   Future<void> createSession(SessionConfig config) {
-    return AiEdgePlatform.instance.createSession(config);
+    return AiEdgePlatform.instance.createSession(config.toMap());
   }
 
   /// Convenience method to initialize both model and session in a single call.
