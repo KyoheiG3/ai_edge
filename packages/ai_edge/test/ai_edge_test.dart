@@ -2,27 +2,28 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ai_edge/ai_edge.dart';
-import 'package:ai_edge/ai_edge_platform_interface.dart';
+import 'package:ai_edge/src/ai_edge.dart';
+import 'package:ai_edge/src/ai_edge_platform_interface.dart';
+import 'package:ai_edge/src/types.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 class MockAiEdgePlatform extends Fake
     with MockPlatformInterfaceMixin
     implements AiEdgePlatform {
   final List<String> methodCalls = [];
-  ModelConfig? lastModelConfig;
-  SessionConfig? lastSessionConfig;
+  Map<String, dynamic>? lastModelConfig;
+  Map<String, dynamic>? lastSessionConfig;
   String? lastPrompt;
   Uint8List? lastImageBytes;
 
   @override
-  Future<void> createModel(ModelConfig config) async {
+  Future<void> createModel(Map<String, dynamic> config) async {
     methodCalls.add('createModel');
     lastModelConfig = config;
   }
 
   @override
-  Future<void> createSession(SessionConfig config) async {
+  Future<void> createSession(Map<String, dynamic> config) async {
     methodCalls.add('createSession');
     lastSessionConfig = config;
   }
@@ -97,7 +98,7 @@ void main() {
 
           // Then
           expect(mockPlatform.methodCalls, contains('createModel'));
-          expect(mockPlatform.lastModelConfig, equals(config));
+          expect(mockPlatform.lastModelConfig, equals(config.toMap()));
         });
       });
 
@@ -117,19 +118,16 @@ void main() {
 
           // Then
           expect(
-            mockPlatform.lastModelConfig?.modelPath,
+            mockPlatform.lastModelConfig?['modelPath'],
             equals('/path/to/model'),
           );
-          expect(mockPlatform.lastModelConfig?.maxTokens, equals(512));
+          expect(mockPlatform.lastModelConfig?['maxTokens'], equals(512));
+          expect(mockPlatform.lastModelConfig?['loraRanks'], equals([4, 8]));
           expect(
-            mockPlatform.lastModelConfig?.supportedLoraRanks,
-            equals([4, 8]),
+            mockPlatform.lastModelConfig?['preferredBackend'],
+            equals(PreferredBackend.gpu.value),
           );
-          expect(
-            mockPlatform.lastModelConfig?.preferredBackend,
-            equals(PreferredBackend.gpu),
-          );
-          expect(mockPlatform.lastModelConfig?.maxNumImages, equals(3));
+          expect(mockPlatform.lastModelConfig?['maxNumImages'], equals(3));
         });
       });
     });
@@ -149,7 +147,7 @@ void main() {
 
           // Then
           expect(mockPlatform.methodCalls, contains('createSession'));
-          expect(mockPlatform.lastSessionConfig, equals(config));
+          expect(mockPlatform.lastSessionConfig, equals(config.toMap()));
         });
       });
 
@@ -162,9 +160,9 @@ void main() {
           await aiEdge.createSession(config);
 
           // Then
-          expect(mockPlatform.lastSessionConfig?.temperature, equals(0.8));
-          expect(mockPlatform.lastSessionConfig?.randomSeed, equals(1));
-          expect(mockPlatform.lastSessionConfig?.topK, equals(40));
+          expect(mockPlatform.lastSessionConfig?['temperature'], equals(0.8));
+          expect(mockPlatform.lastSessionConfig?['randomSeed'], equals(1));
+          expect(mockPlatform.lastSessionConfig?['topK'], equals(40));
         });
       });
     });
@@ -184,8 +182,8 @@ void main() {
             mockPlatform.methodCalls,
             equals(['createModel', 'createSession']),
           );
-          expect(mockPlatform.lastModelConfig?.modelPath, equals(modelPath));
-          expect(mockPlatform.lastModelConfig?.maxTokens, equals(maxTokens));
+          expect(mockPlatform.lastModelConfig?['modelPath'], equals(modelPath));
+          expect(mockPlatform.lastModelConfig?['maxTokens'], equals(maxTokens));
           expect(mockPlatform.lastSessionConfig, isNotNull);
         });
       });
@@ -213,9 +211,9 @@ void main() {
             mockPlatform.methodCalls,
             equals(['createModel', 'createSession']),
           );
-          expect(mockPlatform.lastSessionConfig?.temperature, equals(0.5));
-          expect(mockPlatform.lastSessionConfig?.randomSeed, equals(123));
-          expect(mockPlatform.lastSessionConfig?.topK, equals(30));
+          expect(mockPlatform.lastSessionConfig?['temperature'], equals(0.5));
+          expect(mockPlatform.lastSessionConfig?['randomSeed'], equals(123));
+          expect(mockPlatform.lastSessionConfig?['topK'], equals(30));
         });
       });
     });

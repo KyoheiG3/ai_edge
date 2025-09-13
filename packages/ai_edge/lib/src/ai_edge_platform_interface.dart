@@ -21,10 +21,10 @@ abstract class AiEdgePlatform extends PlatformInterface {
   }
 
   /// Creates a new model with the given configuration
-  Future<void> createModel(ModelConfig config);
+  Future<void> createModel(Map<String, dynamic> config);
 
   /// Creates a new session with the given configuration
-  Future<void> createSession(SessionConfig config);
+  Future<void> createSession(Map<String, dynamic> config);
 
   /// Closes both model and session
   Future<void> close();

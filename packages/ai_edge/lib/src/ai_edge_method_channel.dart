@@ -10,13 +10,13 @@ class MethodChannelAiEdge extends AiEdgePlatform {
   final EventChannel _eventChannel = const EventChannel('ai_edge/events');
 
   @override
-  Future<void> createModel(ModelConfig config) async {
-    await _methodChannel.invokeMethod('createModel', config.toMap());
+  Future<void> createModel(Map<String, dynamic> config) async {
+    await _methodChannel.invokeMethod('createModel', config);
   }
 
   @override
-  Future<void> createSession(SessionConfig config) async {
-    await _methodChannel.invokeMethod('createSession', config.toMap());
+  Future<void> createSession(Map<String, dynamic> config) async {
+    await _methodChannel.invokeMethod('createSession', config);
   }
 
   @override

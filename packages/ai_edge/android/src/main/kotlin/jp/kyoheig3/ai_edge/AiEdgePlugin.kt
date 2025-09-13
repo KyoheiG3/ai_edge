@@ -58,7 +58,7 @@ class AiEdgePlugin: FlutterPlugin, MethodCallHandler, EventChannel.StreamHandler
                 }
             } catch (e: Exception) {
                 launch(Dispatchers.Main) {
-                    val error = CallError.Unknown(e.message ?: "Unknown error")
+                    val error = CallError.Unknown(e)
                     result.error(error.code, error.message, e.stackTraceToString())
                 }
             }
@@ -72,7 +72,7 @@ class AiEdgePlugin: FlutterPlugin, MethodCallHandler, EventChannel.StreamHandler
             inferenceModel?.close()
             inferenceModel = InferenceModel(context, options)
         } catch (e: Exception) {
-            throw CallError.CreateModel(e.message ?: e.toString())
+            throw CallError.CreateModel(e)
         }
     }
 
@@ -84,7 +84,7 @@ class AiEdgePlugin: FlutterPlugin, MethodCallHandler, EventChannel.StreamHandler
             session?.close()
             session = InferenceSession(inference, options)
         } catch (e: Exception) {
-            throw CallError.CreateSession(e.message ?: e.toString())
+            throw CallError.CreateSession(e)
         }
     }
 
@@ -94,7 +94,7 @@ class AiEdgePlugin: FlutterPlugin, MethodCallHandler, EventChannel.StreamHandler
             val prompt = checkNotNull(call.argument<String>("prompt")) { "Missing prompt" }
             session.addQueryChunk(prompt)
         } catch (e: Exception) {
-            throw CallError.AddQueryChunk(e.message ?: e.toString())
+            throw CallError.AddQueryChunk(e)
         }
     }
 
@@ -104,7 +104,7 @@ class AiEdgePlugin: FlutterPlugin, MethodCallHandler, EventChannel.StreamHandler
             val imageBytes = checkNotNull(call.argument<ByteArray>("imageBytes")) { "Missing imageBytes" }
             session.addImage(imageBytes)
         } catch (e: Exception) {
-            throw CallError.AddImage(e.message ?: e.toString())
+            throw CallError.AddImage(e)
         }
     }
 
@@ -113,7 +113,7 @@ class AiEdgePlugin: FlutterPlugin, MethodCallHandler, EventChannel.StreamHandler
             val session = checkNotNull(session) { "Session not created" }
             session.generateResponse(call.argument("prompt"))
         } catch (e: Exception) {
-            throw CallError.GenerateResponse(e.message ?: e.toString())
+            throw CallError.GenerateResponse(e)
         }
     }
 
@@ -131,7 +131,7 @@ class AiEdgePlugin: FlutterPlugin, MethodCallHandler, EventChannel.StreamHandler
                 }
             }
         } catch (e: Exception) {
-            throw CallError.GenerateResponseAsync(e.message ?: e.toString())
+            throw CallError.GenerateResponseAsync(e)
         }
     }
 
