@@ -2,8 +2,9 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ai_edge/ai_edge.dart';
-import 'package:ai_edge/ai_edge_platform_interface.dart';
+import 'package:ai_edge/src/ai_edge.dart';
+import 'package:ai_edge/src/ai_edge_platform_interface.dart';
+import 'package:ai_edge/src/types.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 class MockAiEdgePlatform extends Fake
@@ -121,10 +122,7 @@ void main() {
             equals('/path/to/model'),
           );
           expect(mockPlatform.lastModelConfig?['maxTokens'], equals(512));
-          expect(
-            mockPlatform.lastModelConfig?['loraRanks'],
-            equals([4, 8]),
-          );
+          expect(mockPlatform.lastModelConfig?['loraRanks'], equals([4, 8]));
           expect(
             mockPlatform.lastModelConfig?['preferredBackend'],
             equals(PreferredBackend.gpu.value),
