@@ -48,21 +48,8 @@ android {
     }
 
     dependencies {
-        def flutterPath = "which flutter".execute().text.trim()
-        if (flutterPath) {
-            def flutter_root = new File(flutterPath).parentFile.parent
-
-            if (flutter_root != null) {
-                compileOnly files("$flutter_root/bin/cache/artifacts/engine/android-arm/flutter.jar")
-                compileOnly files("$flutter_root/bin/cache/artifacts/engine/android-arm64/flutter.jar")
-                compileOnly files("$flutter_root/bin/cache/artifacts/engine/android-x64/flutter.jar")
-                testImplementation files("$flutter_root/bin/cache/artifacts/engine/android-arm/flutter.jar")
-            }
-        }
-        
         implementation("com.google.mediapipe:tasks-genai:0.10.24")
         implementation("com.google.mediapipe:tasks-vision-image-generator:0.10.21")
-        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
         testImplementation("org.jetbrains.kotlin:kotlin-test")
         testImplementation("org.mockito:mockito-core:5.0.0")
     }
