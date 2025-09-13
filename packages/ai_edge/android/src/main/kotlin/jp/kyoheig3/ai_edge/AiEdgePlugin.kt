@@ -58,7 +58,7 @@ class AiEdgePlugin: FlutterPlugin, MethodCallHandler, EventChannel.StreamHandler
                 }
             } catch (e: Exception) {
                 launch(Dispatchers.Main) {
-                    val error = CallError.Unknown(e.message ?: "Unknown error")
+                    val error = CallError.Unknown(e)
                     result.error(error.code, error.message, e.stackTraceToString())
                 }
             }
