@@ -1,3 +1,48 @@
+## 0.1.0
+
+### Breaking Changes
+
+* **Package Structure**: Reorganized package to use `src/` directory structure
+  - Main implementation moved to `lib/src/` directory
+  - Public API now exported through `lib/ai_edge.dart`
+  - Platform interfaces moved to `src/` subdirectory
+
+* **Error Handling**: Complete overhaul of error handling system
+  - Introduced sealed classes (`AiEdgeException`) for exhaustive error handling
+  - Replaced string-based errors with type-safe exception hierarchy
+  - `CallError` now accepts `Exception` directly instead of message strings
+  - Removed unnecessary `PlatformException` conversions
+
+* **Platform Interface**: Standardized data conversion patterns
+  - Platform interfaces now accept `Map<String, dynamic>` instead of typed objects
+  - Data conversion happens in upper layer (ai_edge.dart) for consistency
+  - Cleaner separation between platform communication and business logic
+
+### Features
+
+* **Monorepo Structure**: Project reorganized as Flutter workspace
+  - Packages moved to `packages/` directory
+  - Examples moved to `examples/` directory
+  - Enables better package management and development workflow
+
+### Improvements
+
+* **Code Quality**
+  - Improved test coverage with updated mock implementations
+  - Better separation of concerns with `src/` directory structure
+  - More maintainable and extensible codebase
+
+* **Developer Experience**
+  - Cleaner public API surface
+  - Better IDE support with organized file structure
+  - Improved error messages with sealed class pattern
+
+### Chores
+
+* Added LICENSE and README.md symlinks for pub.dev publishing requirements
+* Updated dependencies and build configurations
+* Improved Android build configuration
+
 ## 0.0.1
 
 Initial release of the AI Edge Flutter plugin for on-device AI inference using MediaPipe GenAI.
