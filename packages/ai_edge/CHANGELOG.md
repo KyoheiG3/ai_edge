@@ -1,3 +1,33 @@
+## 0.2.0
+
+### Breaking Changes
+
+* **API Simplification**: Replaced config objects with individual named parameters (#11)
+  - `createModel()` now accepts individual parameters instead of `ModelConfig` object
+  - `createSession()` now accepts individual parameters instead of `SessionConfig` object  
+  - `initialize()` now accepts individual parameters for both model and session configuration
+  - Config classes (`ModelConfig` and `SessionConfig`) are still available internally but not exposed in public API
+
+### Improvements
+
+* **Developer Experience**:
+  - More intuitive API with direct parameter passing
+  - Better IDE autocomplete support without config object nesting
+  - Optional parameters with sensible defaults:
+    - `maxTokens`: Default 1024 (previously required)
+    - `temperature`: Default 0.8
+    - `randomSeed`: Default 1
+    - `topK`: Default 40
+
+* **Platform Implementation**:
+  - Made non-critical parameters optional in Android native implementation
+  - Fixed platform channel communication issues with Unit type handling
+
+* **Code Quality**:
+  - Removed unnecessary `toString()` override from `GenerationEvent` class
+  - Updated documentation to remove references to deprecated exception types
+  - Updated tests to reflect the new API design
+
 ## 0.1.0
 
 ### Breaking Changes
