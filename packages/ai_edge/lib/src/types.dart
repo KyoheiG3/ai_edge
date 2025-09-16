@@ -336,12 +336,4 @@ class GenerationEvent {
       done: map['done'] as bool? ?? false,
     );
   }
-
-  /// Returns a string representation of this event for debugging.
-  ///
-  /// Includes both the partial result and done status in a readable format.
-  @override
-  String toString() {
-    return 'GenerationEvent(partialResult: $partialResult, done: $done)';
-  }
 }
