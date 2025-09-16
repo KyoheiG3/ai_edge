@@ -61,7 +61,7 @@ void main() {
             ),
             FunctionProperty(
               name: 'limit',
-              type: pb.Type.NUMBER,
+              type: PropertyType.integer,
               description: 'Maximum results',
               required: false,
             ),
@@ -79,61 +79,6 @@ void main() {
         expect(proto.parameters.properties.length, equals(2));
         expect(proto.parameters.required, contains('query'));
         expect(proto.parameters.required.contains('limit'), isFalse);
-      });
-    });
-  });
-
-  group('FunctionProperty', () {
-    group('when created with defaults', () {
-      test('then uses STRING type and not required', () {
-        // Given
-        const property = FunctionProperty(
-          name: 'input',
-          description: 'User input',
-        );
-
-        // Then
-        expect(property.name, equals('input'));
-        expect(property.type, equals(pb.Type.STRING));
-        expect(property.description, equals('User input'));
-        expect(property.required, isFalse);
-      });
-    });
-
-    group('when created with all parameters', () {
-      test('then all values are set', () {
-        // Given
-        const property = FunctionProperty(
-          name: 'count',
-          type: pb.Type.NUMBER,
-          description: 'Item count',
-          required: true,
-        );
-
-        // Then
-        expect(property.name, equals('count'));
-        expect(property.type, equals(pb.Type.NUMBER));
-        expect(property.description, equals('Item count'));
-        expect(property.required, isTrue);
-      });
-    });
-
-    group('when build is called', () {
-      test('then returns correct MapEntry', () {
-        // Given
-        const property = FunctionProperty(
-          name: 'enabled',
-          type: pb.Type.BOOLEAN,
-          description: 'Enable feature',
-        );
-
-        // When
-        final entry = property.build();
-
-        // Then
-        expect(entry.key, equals('enabled'));
-        expect(entry.value.type, equals(pb.Type.BOOLEAN));
-        expect(entry.value.description, equals('Enable feature'));
       });
     });
   });

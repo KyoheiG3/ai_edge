@@ -103,7 +103,7 @@ final calculator = FunctionDeclaration(
   properties: [
     FunctionProperty(
       name: 'expression',
-      type: Type.STRING,
+      type: PropertyType.string,
       description: 'Mathematical expression to evaluate',
       required: true,
     ),
@@ -117,13 +117,13 @@ final databaseQuery = FunctionDeclaration(
   properties: [
     FunctionProperty(
       name: 'product_name',
-      type: Type.STRING,
+      type: PropertyType.string,
       description: 'Name of the product to search',
       required: true,
     ),
     FunctionProperty(
       name: 'limit',
-      type: Type.NUMBER,
+      type: PropertyType.integer,
       description: 'Maximum number of results',
       required: false,
     ),
@@ -254,7 +254,7 @@ Defines a function that the model can call:
 #### `FunctionProperty`
 Defines a function parameter:
 - `name`: Parameter name
-- `type`: Data type (STRING, NUMBER, BOOLEAN, OBJECT, ARRAY)
+- `type`: Data type (PropertyType.string, PropertyType.number, PropertyType.integer, PropertyType.boolean, PropertyType.object, PropertyType.array)
 - `description`: Parameter description
 - `required`: Whether the parameter is required
 
