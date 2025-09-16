@@ -46,7 +46,7 @@ class AiEdgePlugin: FlutterPlugin, MethodCallHandler, EventChannel.StreamHandler
                     else -> throw NotImplementedError("Method not implemented: ${call.method}")
                 }
                 launch(Dispatchers.Main) {
-                    result.success(response as? String)
+                    result.success(if (response is Unit) null else response)
                 }
             } catch (_: NotImplementedError) {
                 launch(Dispatchers.Main) {
