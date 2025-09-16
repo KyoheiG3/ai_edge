@@ -1,4 +1,4 @@
 [tools]
 flutter = "3.32.4"
-java = "temurin-17"
+java = "temurin-21"
 python = "3.13.7"

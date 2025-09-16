@@ -1,9 +1,34 @@
-*.iml
-.gradle
+# Gradle
+/.gradle
+/build/
+
+# Local configuration
 /local.properties
-/.idea/workspace.xml
-/.idea/libraries
+
+# IDE
+*.iml
+.idea/
+/captures/
+
+# Kotlin
+.kotlin/
+
+# OS files
 .DS_Store
-/build
-/captures
-.cxx
+
+# Windows specific (not needed for macOS/Linux development)
+/gradlew.bat
+GeneratedPluginRegistrant.java
+
+# Remember to never publicly share your keystore.
+# See https://flutter.dev/docs/deployment/android#reference-the-keystore-from-the-app
+key.properties
+**/*.keystore
+**/*.jks
+
+# Build
+!**/debug.keystore
+!**/release.keystore
+
+# Firebase
+app/google-services.json
