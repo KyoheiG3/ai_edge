@@ -85,36 +85,34 @@ void main() {
     });
 
     group('createModel', () {
-      group('when called with valid model config', () {
+      group('when called with model parameters', () {
         test('then platform createModel is invoked', () async {
-          // Given
-          const config = ModelConfig(
+          // When
+          await aiEdge.createModel(
             modelPath: '/path/to/model',
             maxTokens: 256,
           );
 
-          // When
-          await aiEdge.createModel(config);
-
           // Then
           expect(mockPlatform.methodCalls, contains('createModel'));
-          expect(mockPlatform.lastModelConfig, equals(config.toMap()));
+          expect(
+            mockPlatform.lastModelConfig?['modelPath'],
+            equals('/path/to/model'),
+          );
+          expect(mockPlatform.lastModelConfig?['maxTokens'], equals(256));
         });
       });
 
-      group('when called with optional parameters', () {
+      group('when called with all optional parameters', () {
         test('then all parameters are passed', () async {
-          // Given
-          const config = ModelConfig(
+          // When
+          await aiEdge.createModel(
             modelPath: '/path/to/model',
             maxTokens: 512,
             supportedLoraRanks: [4, 8],
             preferredBackend: PreferredBackend.gpu,
             maxNumImages: 3,
           );
-
-          // When
-          await aiEdge.createModel(config);
 
           // Then
           expect(
@@ -133,31 +131,27 @@ void main() {
     });
 
     group('createSession', () {
-      group('when called with valid session config', () {
+      group('when called with session parameters', () {
         test('then platform createSession is invoked', () async {
-          // Given
-          const config = SessionConfig(
+          // When
+          await aiEdge.createSession(
             temperature: 0.7,
             randomSeed: 42,
             topK: 20,
           );
 
-          // When
-          await aiEdge.createSession(config);
-
           // Then
           expect(mockPlatform.methodCalls, contains('createSession'));
-          expect(mockPlatform.lastSessionConfig, equals(config.toMap()));
+          expect(mockPlatform.lastSessionConfig?['temperature'], equals(0.7));
+          expect(mockPlatform.lastSessionConfig?['randomSeed'], equals(42));
+          expect(mockPlatform.lastSessionConfig?['topK'], equals(20));
         });
       });
 
-      group('when called with default session config', () {
+      group('when called with no parameters', () {
         test('then default values are used', () async {
-          // Given
-          const config = SessionConfig();
-
           // When
-          await aiEdge.createSession(config);
+          await aiEdge.createSession();
 
           // Then
           expect(mockPlatform.lastSessionConfig?['temperature'], equals(0.8));
@@ -168,42 +162,34 @@ void main() {
     });
 
     group('initialize', () {
-      group('when called with model params and no session config', () {
+      group('when called with model params and no session params', () {
         test('then both model and session are created', () async {
-          // Given
-          const modelPath = '/path/to/model';
-          const maxTokens = 256;
-
           // When
-          await aiEdge.initialize(modelPath: modelPath, maxTokens: maxTokens);
+          await aiEdge.initialize(
+            modelPath: '/path/to/model',
+            maxTokens: 256,
+          );
 
           // Then
           expect(
             mockPlatform.methodCalls,
             equals(['createModel', 'createSession']),
           );
-          expect(mockPlatform.lastModelConfig?['modelPath'], equals(modelPath));
-          expect(mockPlatform.lastModelConfig?['maxTokens'], equals(maxTokens));
+          expect(mockPlatform.lastModelConfig?['modelPath'], equals('/path/to/model'));
+          expect(mockPlatform.lastModelConfig?['maxTokens'], equals(256));
           expect(mockPlatform.lastSessionConfig, isNotNull);
         });
       });
 
-      group('when called with model params and custom session config', () {
-        test('then custom config is used', () async {
-          // Given
-          const modelPath = '/path/to/model';
-          const maxTokens = 256;
-          const sessionConfig = SessionConfig(
+      group('when called with model params and custom session params', () {
+        test('then custom params are used', () async {
+          // When
+          await aiEdge.initialize(
+            modelPath: '/path/to/model',
+            maxTokens: 256,
             temperature: 0.5,
             randomSeed: 123,
             topK: 30,
-          );
-
-          // When
-          await aiEdge.initialize(
-            modelPath: modelPath,
-            maxTokens: maxTokens,
-            sessionConfig: sessionConfig,
           );
 
           // Then

@@ -39,12 +39,10 @@ class _ChatScreenState extends State<ChatScreen> {
       await _aiEdge.initialize(
         modelPath: widget.modelPath,
         maxTokens: 256, // Reduced for testing
+        temperature: 0.7,
+        randomSeed: 42,
+        topK: 20, // Reduced for testing
         // preferredBackend: PreferredBackend.gpu,
-        sessionConfig: SessionConfig(
-          temperature: 0.7,
-          randomSeed: 42,
-          topK: 20, // Reduced for testing
-        ),
       );
 
       setState(() {

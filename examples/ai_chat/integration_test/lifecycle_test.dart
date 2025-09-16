@@ -46,19 +46,17 @@ void main() {
       }
 
       // Create model once
-      await aiEdge.createModel(
-        ModelConfig(modelPath: modelPath, maxTokens: 512),
-      );
+      await aiEdge.createModel(modelPath: modelPath, maxTokens: 512);
 
       // Create first session
-      await aiEdge.createSession(const SessionConfig(temperature: 0.5));
+      await aiEdge.createSession(temperature: 0.5);
       await aiEdge.addQueryChunk('Keep your response short.');
 
       final response1 = await aiEdge.generateResponse('Count to 3');
       expect(response1, isNotEmpty);
 
       // Create new session (replaces previous)
-      await aiEdge.createSession(const SessionConfig(temperature: 0.9));
+      await aiEdge.createSession(temperature: 0.9);
       await aiEdge.addQueryChunk('Keep your response short.');
 
       final response2 = await aiEdge.generateResponse('Count to 3');

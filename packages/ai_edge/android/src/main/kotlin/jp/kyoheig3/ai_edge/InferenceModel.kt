@@ -12,7 +12,7 @@ enum class PreferredBackend(val value: Int) {
 
 data class InferenceModelOptions(
     val modelPath: String,
-    val maxTokens: Int,
+    val maxTokens: Int? = null,
     val supportedLoraRanks: List<Int>? = null,
     val maxNumImages: Int? = null,
     val preferredBackend: PreferredBackend? = null
@@ -24,8 +24,8 @@ data class InferenceModelOptions(
 
         val builder = LlmInference.LlmInferenceOptions.builder()
             .setModelPath(modelPath)
-            .setMaxTokens(maxTokens)
-
+        
+        maxTokens?.let { builder.setMaxTokens(it) }
         supportedLoraRanks?.let { builder.setSupportedLoraRanks(it) }
         maxNumImages?.let { if (it > 0) builder.setMaxNumImages(it) }
 
@@ -44,7 +44,6 @@ data class InferenceModelOptions(
                 ?: throw IllegalArgumentException("Missing modelPath")
 
             val maxTokens = (arguments["maxTokens"] as? Number)?.toInt()
-                ?: throw IllegalArgumentException("Missing maxTokens")
 
             val supportedLoraRanks = (arguments["loraRanks"] as? List<*>)
                 ?.mapNotNull { (it as? Number)?.toInt() }
