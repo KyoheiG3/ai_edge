@@ -40,7 +40,7 @@ void main() {
       await aiEdge.initialize(
         modelPath: modelPath,
         maxTokens: 512,
-        sessionConfig: const SessionConfig(temperature: 0.5),
+        temperature: 0.5,
       );
       await aiEdge.addQueryChunk('Keep your response short.');
 
@@ -48,7 +48,7 @@ void main() {
       expect(response1, isNotEmpty);
 
       // Create new session with different config
-      await aiEdge.createSession(const SessionConfig(temperature: 0.9));
+      await aiEdge.createSession(temperature: 0.9);
       await aiEdge.addQueryChunk('Keep your response short.');
 
       final response2 = await aiEdge.generateResponse('Hello');

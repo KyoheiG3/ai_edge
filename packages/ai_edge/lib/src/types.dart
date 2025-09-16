@@ -72,7 +72,9 @@ class ModelConfig {
   ///
   /// This value should be set based on the model's training configuration
   /// and memory constraints. Typical values range from 256 to 2048.
-  final int maxTokens;
+  ///
+  /// Default: 1024
+  final int? maxTokens;
 
   /// Supported LoRA (Low-Rank Adaptation) ranks for model customization.
   ///
@@ -99,13 +101,13 @@ class ModelConfig {
   ///
   /// Parameters:
   /// - [modelPath]: Required. Path to the model file
-  /// - [maxTokens]: Required. Maximum generation length
+  /// - [maxTokens]: Optional. Maximum generation length
   /// - [supportedLoraRanks]: Optional. LoRA adapter ranks
   /// - [preferredBackend]: Optional. Hardware backend preference (Android only)
   /// - [maxNumImages]: Optional. Multi-modal image support
   const ModelConfig({
     required this.modelPath,
-    required this.maxTokens,
+    this.maxTokens,
     this.supportedLoraRanks,
     this.preferredBackend,
     this.maxNumImages,
@@ -119,7 +121,7 @@ class ModelConfig {
   Map<String, dynamic> toMap() {
     final map = <String, dynamic>{
       'modelPath': modelPath,
-      'maxTokens': maxTokens,
+      'maxTokens': maxTokens ?? 1024,
     };
     if (supportedLoraRanks != null) {
       map['loraRanks'] = supportedLoraRanks;
@@ -168,7 +170,7 @@ class SessionConfig {
   /// - Higher values (e.g., 0.8-1.0): More creative, diverse responses
   ///
   /// Default: 0.8
-  final double temperature;
+  final double? temperature;
 
   /// Random seed for reproducible text generation.
   ///
@@ -177,7 +179,7 @@ class SessionConfig {
   /// timestamps for varied outputs.
   ///
   /// Default: 1
-  final int randomSeed;
+  final int? randomSeed;
 
   /// Top-K sampling parameter.
   ///
@@ -186,7 +188,7 @@ class SessionConfig {
   ///
   /// Range: Must be > 1 (typically 10-100)
   /// Default: 40
-  final int topK;
+  final int? topK;
 
   /// Top-P (nucleus) sampling parameter.
   ///
@@ -226,9 +228,9 @@ class SessionConfig {
   /// - [loraPath]: null - No LoRA adapter
   /// - [enableVisionModality]: null - Auto-detected
   const SessionConfig({
-    this.temperature = 0.8,
-    this.randomSeed = 1,
-    this.topK = 40,
+    this.temperature,
+    this.randomSeed,
+    this.topK,
     this.topP,
     this.loraPath,
     this.enableVisionModality,
@@ -241,9 +243,9 @@ class SessionConfig {
   /// (temperature, randomSeed, topK) and conditionally includes optional ones.
   Map<String, dynamic> toMap() {
     final map = <String, dynamic>{
-      'temperature': temperature,
-      'randomSeed': randomSeed,
-      'topK': topK,
+      'temperature': temperature ?? 0.8,
+      'randomSeed': randomSeed ?? 1,
+      'topK': topK ?? 40,
     };
     if (topP != null) {
       map['topP'] = topP;
@@ -333,13 +335,5 @@ class GenerationEvent {
       partialResult: map['partialResult'] as String? ?? '',
       done: map['done'] as bool? ?? false,
     );
-  }
-
-  /// Returns a string representation of this event for debugging.
-  ///
-  /// Includes both the partial result and done status in a readable format.
-  @override
-  String toString() {
-    return 'GenerationEvent(partialResult: $partialResult, done: $done)';
   }
 }

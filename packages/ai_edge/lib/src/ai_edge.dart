@@ -81,21 +81,36 @@ class AiEdge {
   /// format (.task file).
   ///
   /// Parameters:
-  /// - [config]: The model configuration including path, token limits, and backend preferences
+  /// - [modelPath]: Path to the MediaPipe Task model file (required)
+  /// - [maxTokens]: Maximum number of tokens the model can generate. Default: 1024
+  /// - [supportedLoraRanks]: Optional LoRA adapter ranks. Default: null
+  /// - [preferredBackend]: Hardware acceleration preference (Android only). Default: null
+  /// - [maxNumImages]: Maximum number of images for multi-modal input. Default: null
   ///
-  /// Throws:
-  /// - [PlatformException] if the model file cannot be loaded or is incompatible
-  /// - [ArgumentError] if the configuration parameters are invalid
+  /// Throws an exception if the model file cannot be loaded or is incompatible.
   ///
   /// Example:
   /// ```dart
-  /// await aiEdge.createModel(ModelConfig(
+  /// await aiEdge.createModel(
   ///   modelPath: '/path/to/model.task',
   ///   maxTokens: 1024,
   ///   preferredBackend: PreferredBackend.gpu,
-  /// ));
+  /// );
   /// ```
-  Future<void> createModel(ModelConfig config) {
+  Future<void> createModel({
+    required String modelPath,
+    int? maxTokens,
+    List<int>? supportedLoraRanks,
+    PreferredBackend? preferredBackend,
+    int? maxNumImages,
+  }) {
+    final config = ModelConfig(
+      modelPath: modelPath,
+      maxTokens: maxTokens,
+      supportedLoraRanks: supportedLoraRanks,
+      preferredBackend: preferredBackend,
+      maxNumImages: maxNumImages,
+    );
     return AiEdgePlatform.instance.createModel(config.toMap());
   }
 
@@ -105,24 +120,38 @@ class AiEdge {
   /// Multiple sessions can be created sequentially, but only one session
   /// is active at a time.
   ///
-  /// Parameters:
-  /// - [config]: Session configuration for generation parameters
-  ///
-  /// The session configuration controls:
-  /// - Temperature: Controls randomness (0.0 = deterministic, 1.0 = more random)
-  /// - Top-K: Limits vocabulary to K most likely tokens
-  /// - Top-P: Nucleus sampling threshold
-  /// - Random seed: For reproducible generation
+  /// Parameters (all optional with defaults):
+  /// - [temperature]: Controls randomness (0.0-1.0). Default: 0.8
+  /// - [randomSeed]: For reproducible outputs. Default: 1
+  /// - [topK]: Top-K sampling parameter. Default: 40
+  /// - [topP]: Top-P nucleus sampling. Default: null
+  /// - [loraPath]: Path to LoRA adapter. Default: null
+  /// - [enableVisionModality]: Enable vision features. Default: null
   ///
   /// Example:
   /// ```dart
-  /// await aiEdge.createSession(SessionConfig(
+  /// await aiEdge.createSession(
   ///   temperature: 0.7,
   ///   topK: 40,
   ///   topP: 0.95,
-  /// ));
+  /// );
   /// ```
-  Future<void> createSession(SessionConfig config) {
+  Future<void> createSession({
+    double? temperature,
+    int? randomSeed,
+    int? topK,
+    double? topP,
+    String? loraPath,
+    bool? enableVisionModality,
+  }) {
+    final config = SessionConfig(
+      temperature: temperature,
+      randomSeed: randomSeed,
+      topK: topK,
+      topP: topP,
+      loraPath: loraPath,
+      enableVisionModality: enableVisionModality,
+    );
     return AiEdgePlatform.instance.createSession(config.toMap());
   }
 
@@ -132,12 +161,17 @@ class AiEdge {
   /// It's the recommended way to initialize the AI Edge plugin for most use cases.
   ///
   /// Parameters:
-  /// - [modelPath]: Path to the MediaPipe Task model file
-  /// - [maxTokens]: Maximum number of tokens the model can generate
+  /// - [modelPath]: Path to the MediaPipe Task model file (required)
+  /// - [maxTokens]: Maximum number of tokens the model can generate. Default: 1024
   /// - [supportedLoraRanks]: Optional LoRA adapter ranks for model customization
   /// - [preferredBackend]: Hardware acceleration preference (CPU/GPU) - Android only, ignored on iOS
   /// - [maxNumImages]: Maximum number of images supported in multi-modal input
-  /// - [sessionConfig]: Optional session configuration; uses defaults if not provided
+  /// - [temperature]: Session temperature for randomness. Default: 0.8
+  /// - [randomSeed]: Session random seed. Default: 1
+  /// - [topK]: Session top-K sampling. Default: 40
+  /// - [topP]: Session top-P nucleus sampling. Default: null
+  /// - [loraPath]: Session LoRA adapter path. Default: null
+  /// - [enableVisionModality]: Enable vision features. Default: null
   ///
   /// Returns a [Future] that completes when both model and session are ready.
   ///
@@ -147,30 +181,41 @@ class AiEdge {
   ///   modelPath: '/path/to/model.task',
   ///   maxTokens: 512,
   ///   preferredBackend: PreferredBackend.gpu,
-  ///   sessionConfig: SessionConfig(temperature: 0.8),
+  ///   temperature: 0.8,
+  ///   topK: 50,
   /// );
   /// ```
   Future<void> initialize({
     required String modelPath,
-    required int maxTokens,
+    int? maxTokens,
     List<int>? supportedLoraRanks,
     PreferredBackend? preferredBackend,
     int? maxNumImages,
-    SessionConfig? sessionConfig,
+    double? temperature,
+    int? randomSeed,
+    int? topK,
+    double? topP,
+    String? loraPath,
+    bool? enableVisionModality,
   }) async {
     // Create model
     await createModel(
-      ModelConfig(
-        modelPath: modelPath,
-        maxTokens: maxTokens,
-        supportedLoraRanks: supportedLoraRanks,
-        preferredBackend: preferredBackend,
-        maxNumImages: maxNumImages,
-      ),
+      modelPath: modelPath,
+      maxTokens: maxTokens,
+      supportedLoraRanks: supportedLoraRanks,
+      preferredBackend: preferredBackend,
+      maxNumImages: maxNumImages,
     );
 
-    // Create session with default or provided config
-    await createSession(sessionConfig ?? const SessionConfig());
+    // Create session with provided parameters
+    await createSession(
+      temperature: temperature,
+      randomSeed: randomSeed,
+      topK: topK,
+      topP: topP,
+      loraPath: loraPath,
+      enableVisionModality: enableVisionModality,
+    );
   }
 
   /// Releases all resources associated with the model and session.
@@ -252,8 +297,7 @@ class AiEdge {
   ///
   /// Returns the complete generated text response.
   ///
-  /// Throws:
-  /// - [PlatformException] if generation fails or the model encounters an error
+  /// Throws an exception if generation fails or the model encounters an error.
   ///
   /// Example:
   /// ```dart

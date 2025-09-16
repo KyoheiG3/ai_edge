@@ -9,19 +9,19 @@ import com.google.mediapipe.tasks.genai.llminference.LlmInferenceSession
 import com.google.mediapipe.tasks.genai.llminference.ProgressListener
 
 data class InferenceSessionOptions(
-    val temperature: Float,
-    val randomSeed: Int,
-    val topK: Int,
+    val temperature: Float? = null,
+    val randomSeed: Int? = null,
+    val topK: Int? = null,
     val topP: Float? = null,
     val loraPath: String? = null,
     val enableVisionModality: Boolean? = null
 ) {
     fun build(): LlmInferenceSession.LlmInferenceSessionOptions {
         val builder = LlmInferenceSession.LlmInferenceSessionOptions.builder()
-            .setTemperature(temperature)
-            .setRandomSeed(randomSeed)
-            .setTopK(topK)
-
+        
+        temperature?.let { builder.setTemperature(it) }
+        randomSeed?.let { builder.setRandomSeed(it) }
+        topK?.let { builder.setTopK(it) }
         topP?.let { builder.setTopP(it) }
         loraPath?.let { builder.setLoraPath(it) }
         enableVisionModality?.let {
@@ -38,14 +38,8 @@ data class InferenceSessionOptions(
     companion object {
         fun fromArgs(arguments: Map<*, *>): InferenceSessionOptions {
             val temperature = (arguments["temperature"] as? Number)?.toFloat()
-                ?: throw IllegalArgumentException("Missing temperature")
-            
             val randomSeed = (arguments["randomSeed"] as? Number)?.toInt()
-                ?: throw IllegalArgumentException("Missing randomSeed")
-            
             val topK = (arguments["topK"] as? Number)?.toInt()
-                ?: throw IllegalArgumentException("Missing topK")
-            
             val topP = (arguments["topP"] as? Number)?.toFloat()
             val loraPath = arguments["loraPath"] as? String
             val enableVisionModality = arguments["enableVisionModality"] as? Boolean
