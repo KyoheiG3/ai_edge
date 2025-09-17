@@ -26,7 +26,7 @@ Or add it manually to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ai_edge_fc: ^0.0.1
+  ai_edge_fc:
 ```
 
 ## Getting Started

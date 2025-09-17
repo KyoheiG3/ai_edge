@@ -75,11 +75,11 @@ Add the desired package to your `pubspec.yaml`:
 ```yaml
 # For basic AI inference
 dependencies:
-  ai_edge: ^0.2.0
+  ai_edge:
 
 # For AI with function calling
 dependencies:
-  ai_edge_fc: ^0.0.1
+  ai_edge_fc:
 ```
 
 ### Quick Example
