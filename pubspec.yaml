@@ -9,4 +9,3 @@ environment:
 workspace:
   - packages/ai_edge
   - packages/ai_edge_fc
-  - examples/ai_chat
