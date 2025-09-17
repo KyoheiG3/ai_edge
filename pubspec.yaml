@@ -9,3 +9,6 @@ environment:
 workspace:
   - packages/ai_edge
   - packages/ai_edge_fc
+
+dev_dependencies:
+  lcov_excluder: ^0.2.0
