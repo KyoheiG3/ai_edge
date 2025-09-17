@@ -101,7 +101,7 @@ class AiEdgeFcPlugin : FlutterPlugin, MethodCallHandler {
             val generativeModel = GenerativeModel(
                 backend,
                 systemInstruction ?: Content.getDefaultInstance(),
-                tools.ifEmpty { listOf(Tool.getDefaultInstance()) },
+                tools,
             )
             session?.close()
             session = generativeModel.startChat()
