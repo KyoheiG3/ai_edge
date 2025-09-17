@@ -180,10 +180,7 @@ void main() {
       test('builds protobuf with textUntil', () {
         // Given
         const constraints = ConstraintOptions(
-          textUntil: TextUntil(
-            stopPhrase: 'STOP',
-            constraintSuffix: 'done',
-          ),
+          textUntil: TextUntil(stopPhrase: 'STOP', constraintSuffix: 'done'),
         );
 
         // When
@@ -464,9 +461,7 @@ void main() {
 
       test('builds protobuf with partial fields', () {
         // Given
-        const textAndOr = TextAndOr(
-          stopPhrasePrefix: 'pre',
-        );
+        const textAndOr = TextAndOr(stopPhrasePrefix: 'pre');
 
         // When
         final proto = textAndOr.build();
@@ -550,8 +545,7 @@ void main() {
 
       test('creates instance from protobuf with only stopPhrase', () {
         // Given
-        final proto = pb.ConstraintOptions_TextUntil()
-          ..stopPhrase = 'STOP';
+        final proto = pb.ConstraintOptions_TextUntil()..stopPhrase = 'STOP';
 
         // When
         final textUntil = TextUntil.fromProto(proto);
@@ -632,10 +626,14 @@ void main() {
       final restored = ConstraintOptions.fromProto(proto);
 
       // Then
-      expect(restored.toolCallOnly?.constraintPrefix, 
-             equals(original.toolCallOnly?.constraintPrefix));
-      expect(restored.toolCallOnly?.constraintSuffix,
-             equals(original.toolCallOnly?.constraintSuffix));
+      expect(
+        restored.toolCallOnly?.constraintPrefix,
+        equals(original.toolCallOnly?.constraintPrefix),
+      );
+      expect(
+        restored.toolCallOnly?.constraintSuffix,
+        equals(original.toolCallOnly?.constraintSuffix),
+      );
     });
 
     test('multiple constraint types can be built independently', () {

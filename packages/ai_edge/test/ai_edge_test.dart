@@ -88,10 +88,7 @@ void main() {
       group('when called with model parameters', () {
         test('then platform createModel is invoked', () async {
           // When
-          await aiEdge.createModel(
-            modelPath: '/path/to/model',
-            maxTokens: 256,
-          );
+          await aiEdge.createModel(modelPath: '/path/to/model', maxTokens: 256);
 
           // Then
           expect(mockPlatform.methodCalls, contains('createModel'));
@@ -165,17 +162,17 @@ void main() {
       group('when called with model params and no session params', () {
         test('then both model and session are created', () async {
           // When
-          await aiEdge.initialize(
-            modelPath: '/path/to/model',
-            maxTokens: 256,
-          );
+          await aiEdge.initialize(modelPath: '/path/to/model', maxTokens: 256);
 
           // Then
           expect(
             mockPlatform.methodCalls,
             equals(['createModel', 'createSession']),
           );
-          expect(mockPlatform.lastModelConfig?['modelPath'], equals('/path/to/model'));
+          expect(
+            mockPlatform.lastModelConfig?['modelPath'],
+            equals('/path/to/model'),
+          );
           expect(mockPlatform.lastModelConfig?['maxTokens'], equals(256));
           expect(mockPlatform.lastSessionConfig, isNotNull);
         });

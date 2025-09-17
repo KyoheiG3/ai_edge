@@ -36,12 +36,12 @@ final class FunctionDeclaration with Writable {
   ///
   /// This name is used by the model when generating function calls.
   final String name;
-  
+
   /// Optional human-readable description of what the function does.
   ///
   /// This helps the model understand when to use the function.
   final String? description;
-  
+
   /// The list of parameters this function accepts.
   ///
   /// Each property defines a parameter including its type, description,

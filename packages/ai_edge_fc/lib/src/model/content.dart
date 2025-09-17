@@ -21,7 +21,7 @@ import 'part.dart';
 final class Content {
   /// The role of the content creator ('user', 'model', 'system', etc.).
   final String role;
-  
+
   /// The list of message parts that make up this content.
   ///
   /// Parts can include text, function calls, function responses, or other

@@ -28,12 +28,12 @@ final class FunctionResponse with Writable {
   ///
   /// Typically set to 'function' to indicate this is a function response.
   final String? role;
-  
+
   /// The original function call that this is responding to.
   ///
   /// This links the response back to the specific function invocation.
   final FunctionCall functionCall;
-  
+
   /// The actual response data from the function execution.
   ///
   /// This map contains the result of the function call, which can include

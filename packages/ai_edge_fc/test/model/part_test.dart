@@ -103,7 +103,10 @@ void main() {
         // Then
         expect(proto.hasFunctionCall(), isTrue);
         expect(proto.functionCall.name, equals('search'));
-        expect(proto.functionCall.args.fields['query']?.stringValue, equals('Flutter'));
+        expect(
+          proto.functionCall.args.fields['query']?.stringValue,
+          equals('Flutter'),
+        );
         expect(proto.hasText(), isFalse);
       });
 
@@ -131,25 +134,25 @@ void main() {
         expect(proto.hasText(), isFalse);
       });
 
-      test('builds protobuf with both text and function call (oneof constraint)', () {
-        // Given - Note: protobuf Part uses oneof, so only functionCall will be set
-        const functionCall = FunctionCall(
-          name: 'test',
-          args: Struct(fields: {}),
-        );
-        const part = Part(
-          text: 'Some text',
-          functionCall: functionCall,
-        );
+      test(
+        'builds protobuf with both text and function call (oneof constraint)',
+        () {
+          // Given - Note: protobuf Part uses oneof, so only functionCall will be set
+          const functionCall = FunctionCall(
+            name: 'test',
+            args: Struct(fields: {}),
+          );
+          const part = Part(text: 'Some text', functionCall: functionCall);
 
-        // When
-        final proto = part.build();
+          // When
+          final proto = part.build();
 
-        // Then - Due to oneof constraint, only functionCall is set when both are provided
-        expect(proto.text, equals('')); // text is cleared due to oneof
-        expect(proto.hasFunctionCall(), isTrue);
-        expect(proto.functionCall.name, equals('test'));
-      });
+          // Then - Due to oneof constraint, only functionCall is set when both are provided
+          expect(proto.text, equals('')); // text is cleared due to oneof
+          expect(proto.hasFunctionCall(), isTrue);
+          expect(proto.functionCall.name, equals('test'));
+        },
+      );
 
       test('builds protobuf with neither text nor function call', () {
         // Given
@@ -171,10 +174,7 @@ void main() {
           name: 'calculate',
           args: Struct(fields: {'expression': '2+2'}),
         );
-        const part = Part(
-          text: 'Calculating...',
-          functionCall: functionCall,
-        );
+        const part = Part(text: 'Calculating...', functionCall: functionCall);
 
         // Then
         expect(part.text, equals('Calculating...'));

@@ -20,10 +20,10 @@ import 'package:ai_edge_fc/src/proto/local_agents/function_calling/core/proto/co
 final class ConstraintOptions with Writable {
   /// Constraint for forcing tool-only responses from the model.
   final ToolCallOnly? toolCallOnly;
-  
+
   /// Constraint for text generation with AND/OR stop conditions.
   final TextAndOr? textAndOr;
-  
+
   /// Constraint for text generation until a specific stop phrase is encountered.
   final TextUntil? textUntil;
 
@@ -80,7 +80,7 @@ final class ConstraintOptions with Writable {
 final class ToolCallOnly {
   /// Optional prefix text to add before tool call output.
   final String? constraintPrefix;
-  
+
   /// Optional suffix text to add after tool call output.
   final String? constraintSuffix;
 
@@ -123,10 +123,10 @@ final class ToolCallOnly {
 final class TextAndOr {
   /// Prefix to match before the stop phrase.
   final String? stopPhrasePrefix;
-  
+
   /// Suffix to match after the stop phrase.
   final String? stopPhraseSuffix;
-  
+
   /// Optional suffix to add after constraint is applied.
   final String? constraintSuffix;
 
@@ -174,7 +174,7 @@ final class TextAndOr {
 final class TextUntil {
   /// The phrase that terminates text generation when encountered.
   final String? stopPhrase;
-  
+
   /// Optional suffix to add after the constraint is applied.
   final String? constraintSuffix;
 

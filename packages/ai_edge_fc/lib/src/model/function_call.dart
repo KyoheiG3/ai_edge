@@ -25,7 +25,7 @@ final class FunctionCall {
   /// This should match one of the function names declared in the tools
   /// provided to the model.
   final String name;
-  
+
   /// The arguments to pass to the function.
   ///
   /// Arguments are represented as a [Struct] which can contain nested
