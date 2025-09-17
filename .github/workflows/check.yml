@@ -33,10 +33,10 @@ jobs:
       - name: Install Dependencies
         run: |
           flutter pub get
-          cd packages/ai_chat
+          cd examples/ai_chat
           flutter pub get
           cd -
-          cd packages/ai_chat_fc
+          cd examples/ai_chat_fc
           flutter pub get
           cd -
 
