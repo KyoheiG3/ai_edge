@@ -31,7 +31,14 @@ jobs:
           cache: true
 
       - name: Install Dependencies
-        run: flutter pub get
+        run: |
+          flutter pub get
+          cd examples/ai_chat
+          flutter pub get
+          cd -
+          cd examples/ai_chat_fc
+          flutter pub get
+          cd -
 
       - name: Dart Analyzer
         uses: invertase/github-action-dart-analyzer@e981b01a458d0bab71ee5da182e5b26687b7101b # v3.0.0
@@ -39,7 +46,16 @@ jobs:
           fatal-infos: true
 
       - name: Test
-        run: flutter test packages/ai_edge --coverage
+        run: |
+          cd packages/ai_edge
+          flutter test --coverage
+          cd -
+          cd packages/ai_edge_fc
+          flutter test --coverage
+          cd -
+
+      - name: Exclude files from coverage
+        run: dart run lcov_excluder exclude
 
       - name: Octocov
         uses: k1LoW/octocov-action@73d561f65d59e66899ed5c87e4621a913b5d5c20 # v1.5.0

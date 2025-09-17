@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:ai_edge/ai_edge.dart';
-import '../models/gemma_model.dart';
+import 'package:flutter/material.dart';
+
 import '../models/chat_message.dart';
+import '../models/gemma_model.dart';
 
 class ChatScreen extends StatefulWidget {
   final GemmaModel model;

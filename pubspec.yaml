@@ -8,4 +8,7 @@ environment:
 
 workspace:
   - packages/ai_edge
-  - examples/ai_chat
+  - packages/ai_edge_fc
+
+dev_dependencies:
+  lcov_excluder: ^0.2.0

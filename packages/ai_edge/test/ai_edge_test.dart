@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:typed_data';
 
-import 'package:flutter_test/flutter_test.dart';
 import 'package:ai_edge/src/ai_edge.dart';
 import 'package:ai_edge/src/ai_edge_platform_interface.dart';
 import 'package:ai_edge/src/types.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 class MockAiEdgePlatform extends Fake
@@ -88,10 +88,7 @@ void main() {
       group('when called with model parameters', () {
         test('then platform createModel is invoked', () async {
           // When
-          await aiEdge.createModel(
-            modelPath: '/path/to/model',
-            maxTokens: 256,
-          );
+          await aiEdge.createModel(modelPath: '/path/to/model', maxTokens: 256);
 
           // Then
           expect(mockPlatform.methodCalls, contains('createModel'));
@@ -165,17 +162,17 @@ void main() {
       group('when called with model params and no session params', () {
         test('then both model and session are created', () async {
           // When
-          await aiEdge.initialize(
-            modelPath: '/path/to/model',
-            maxTokens: 256,
-          );
+          await aiEdge.initialize(modelPath: '/path/to/model', maxTokens: 256);
 
           // Then
           expect(
             mockPlatform.methodCalls,
             equals(['createModel', 'createSession']),
           );
-          expect(mockPlatform.lastModelConfig?['modelPath'], equals('/path/to/model'));
+          expect(
+            mockPlatform.lastModelConfig?['modelPath'],
+            equals('/path/to/model'),
+          );
           expect(mockPlatform.lastModelConfig?['maxTokens'], equals(256));
           expect(mockPlatform.lastSessionConfig, isNotNull);
         });

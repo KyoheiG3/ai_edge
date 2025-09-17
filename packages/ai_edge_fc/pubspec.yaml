@@ -1,0 +1,33 @@
+name: ai_edge_fc
+description: "Flutter plugin for on-device AI inference with MediaPipe Function Calling."
+version: 0.0.1
+homepage: https://github.com/KyoheiG3/ai_edge
+repository: https://github.com/KyoheiG3/ai_edge
+documentation: https://github.com/KyoheiG3/ai_edge
+issue_tracker: https://github.com/KyoheiG3/ai_edge/issues
+
+environment:
+  sdk: ^3.8.0
+  flutter: ">=3.32.0"
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  plugin_platform_interface: ^2.0.2
+  ai_edge: ^0.2.0
+  protobuf: ^4.2.0
+  collection: ^1.19.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: jp.kyoheig3.ai_edge_fc
+        pluginClass: AiEdgeFcPlugin

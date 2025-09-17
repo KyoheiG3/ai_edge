@@ -1,0 +1,32 @@
+name: ai_chat_fc
+description: "Demonstrates how to use the ai_edge_fc plugin."
+version: 1.0.0
+publish_to: "none"
+
+environment:
+  sdk: ^3.8.0
+  flutter: ">=3.32.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  ai_edge_fc:
+    path: ../../packages/ai_edge_fc
+  cupertino_icons: ^1.0.8
+  http: ^1.5.0
+  path_provider: ^2.1.5
+  shared_preferences: ^2.5.3
+
+dev_dependencies:
+  integration_test:
+    sdk: flutter
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+
+dependency_overrides:
+  ai_edge:
+    path: ../../packages/ai_edge
