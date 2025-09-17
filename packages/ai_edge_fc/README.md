@@ -36,14 +36,23 @@ dependencies:
 ```dart
 import 'package:ai_edge_fc/ai_edge_fc.dart';
 
-// Initialize the AI model with function calling support
+// Get the AI Edge FC instance
 final aiEdgeFc = AiEdgeFc.instance;
-await aiEdgeFc.initialize(
+
+// Step 1: Create the model
+await aiEdgeFc.createModel(
   modelPath: '/path/to/your/model.task',
   maxTokens: 512,
 );
 
-// Define functions the model can call
+// Step 2: Set system instruction (BEFORE createSession!)
+await aiEdgeFc.setSystemInstruction(
+  SystemInstruction(
+    instruction: 'You are a helpful assistant. Use functions when appropriate.',
+  ),
+);
+
+// Step 3: Define functions the model can call (BEFORE createSession!)
 final functions = [
   FunctionDeclaration(
     name: 'get_weather',
@@ -52,13 +61,18 @@ final functions = [
       FunctionProperty(
         name: 'location',
         description: 'The city name',
+        type: PropertyType.string,
         required: true,
       ),
     ],
   ),
 ];
-
 await aiEdgeFc.setFunctions(functions);
+
+// Step 4: Create the session (AFTER setting functions and system instruction)
+await aiEdgeFc.createSession(
+  temperature: 0.7,
+);
 
 // Send a message that might trigger a function call
 final response = await aiEdgeFc.sendMessage(
@@ -92,6 +106,23 @@ This plugin requires a MediaPipe Task format model (`.task` file) with function 
 Place the model file in your app's documents directory or assets.
 
 ## Usage
+
+### Important: Initialization Order
+
+⚠️ **IMPORTANT**: You must call `setSystemInstruction` and `setFunctions` **BEFORE** calling `createSession`. The session needs to be created with knowledge of the available functions and system instructions.
+
+```dart
+// ✅ Correct order (functions must be set before session):
+await aiEdgeFc.setSystemInstruction(SystemInstruction(...));  // Can be before or after createModel
+await aiEdgeFc.setFunctions([...]);                           // Can be before or after createModel
+await aiEdgeFc.createModel(modelPath: modelPath);
+await aiEdgeFc.createSession();                               // Must be AFTER setting functions
+
+// ❌ Incorrect order (functions won't work):
+await aiEdgeFc.createModel(modelPath: modelPath);
+await aiEdgeFc.createSession();
+await aiEdgeFc.setFunctions([...]);  // Too late! Session already created
+```
 
 ### Define Functions
 
@@ -316,6 +347,22 @@ Model's response containing:
     android:largeHeap="true"
     ...>
   ```
+
+## Example App
+
+Check out the [examples/ai_chat_fc](../../examples/ai_chat_fc/) directory for a complete chat application with function calling demonstrations:
+
+- Weather information retrieval (simulated)
+- Calculator functions (basic arithmetic)
+- Time and date information
+- Multi-turn conversations with context
+- Error handling and recovery
+
+Run the example:
+```bash
+cd examples/ai_chat_fc
+flutter run
+```
 
 ## Troubleshooting
 
