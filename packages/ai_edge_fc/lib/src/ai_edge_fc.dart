@@ -1,5 +1,6 @@
 import 'package:ai_edge/ai_edge.dart';
 import 'package:ai_edge_fc/src/model/content.dart';
+import 'package:ai_edge_fc/src/model/model_formatter.dart';
 import 'package:ai_edge_fc/src/model/models.dart';
 import 'package:flutter/services.dart';
 
@@ -70,6 +71,7 @@ export 'package:ai_edge/ai_edge.dart'
 /// ```
 ///
 /// ## Platform Requirements
+/// - iOS: Requires iOS 15.0 or later with MediaPipe GenAI iOS framework
 /// - Android: Requires Android API level 24 or later with MediaPipe GenAI Android library
 ///
 /// ## Model Format
@@ -144,6 +146,7 @@ class AiEdgeFc {
   /// - [topP]: Top-P nucleus sampling. Default: null
   /// - [loraPath]: Path to LoRA adapter. Default: null
   /// - [enableVisionModality]: Enable vision features. Default: null
+  /// - [formatter]: Model formatter type. Default: ModelFormatter.gemma
   ///
   /// Example:
   /// ```dart
@@ -151,6 +154,7 @@ class AiEdgeFc {
   ///   temperature: 0.7,
   ///   topK: 40,
   ///   topP: 0.95,
+  ///   formatter: ModelFormatter.llama,
   /// );
   /// ```
   Future<void> createSession({
@@ -160,6 +164,7 @@ class AiEdgeFc {
     double? topP,
     String? loraPath,
     bool? enableVisionModality,
+    ModelFormatter? formatter,
   }) {
     final config = SessionConfig(
       temperature: temperature,
@@ -169,7 +174,9 @@ class AiEdgeFc {
       loraPath: loraPath,
       enableVisionModality: enableVisionModality,
     );
-    return AiEdgeFcPlatform.instance.createSession(config.toMap());
+    final args = config.toMap();
+    args['formatter'] = (formatter ?? ModelFormatter.gemma).value;
+    return AiEdgeFcPlatform.instance.createSession(args);
   }
 
   /// Convenience method to initialize both model and session in a single call.
@@ -189,6 +196,7 @@ class AiEdgeFc {
   /// - [topP]: Session top-P nucleus sampling. Default: null
   /// - [loraPath]: Session LoRA adapter path. Default: null
   /// - [enableVisionModality]: Enable vision features. Default: null
+  /// - [formatter]: Model formatter type. Default: ModelFormatter.gemma
   ///
   /// Returns a [Future] that completes when both model and session are ready.
   ///
@@ -200,6 +208,7 @@ class AiEdgeFc {
   ///   preferredBackend: PreferredBackend.gpu,
   ///   temperature: 0.8,
   ///   topK: 50,
+  ///   formatter: ModelFormatter.llama,
   /// );
   /// ```
   Future<void> initialize({
@@ -214,6 +223,7 @@ class AiEdgeFc {
     double? topP,
     String? loraPath,
     bool? enableVisionModality,
+    ModelFormatter? formatter,
   }) async {
     // Create model
     await createModel(
@@ -232,6 +242,7 @@ class AiEdgeFc {
       topP: topP,
       loraPath: loraPath,
       enableVisionModality: enableVisionModality,
+      formatter: formatter,
     );
   }
 

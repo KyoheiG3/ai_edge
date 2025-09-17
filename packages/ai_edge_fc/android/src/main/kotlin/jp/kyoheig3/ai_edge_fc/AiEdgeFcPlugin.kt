@@ -7,8 +7,11 @@ import com.google.ai.edge.localagents.core.proto.Tool
 import com.google.ai.edge.localagents.fc.proto.ConstraintOptions
 import com.google.ai.edge.localagents.fc.ChatSession
 import com.google.ai.edge.localagents.fc.GemmaFormatter
+import com.google.ai.edge.localagents.fc.HammerFormatter
+import com.google.ai.edge.localagents.fc.LlamaFormatter
 import com.google.ai.edge.localagents.fc.GenerativeModel
 import com.google.ai.edge.localagents.fc.LlmInferenceBackend
+import com.google.ai.edge.localagents.fc.ModelFormatter
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -93,10 +96,18 @@ class AiEdgeFcPlugin : FlutterPlugin, MethodCallHandler {
         try {
             val inference = checkNotNull(inferenceModel?.inference) { "Inference model is not created" }
             val arguments = checkNotNull(call.arguments as? Map<*, *>) { "Invalid arguments format" }
+            
+            // Get formatter based on type from arguments
+            val formatter = when (call.argument<String>("formatterType")) {
+                "HAMMER" -> HammerFormatter()
+                "LLAMA" -> LlamaFormatter()
+                else -> GemmaFormatter() // Default to Gemma
+            }
+            
             val backend = LlmInferenceBackend(
                 inference,
                 InferenceSessionOptions.fromArgs(arguments).build(),
-                GemmaFormatter()
+                formatter
             )
             val generativeModel = GenerativeModel(
                 backend,
