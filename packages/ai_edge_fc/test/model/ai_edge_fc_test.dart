@@ -1,10 +1,10 @@
-import 'package:ai_edge_fc/src/model/struct.dart';
-import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter/services.dart';
 import 'package:ai_edge_fc/src/ai_edge_fc.dart';
-import 'package:ai_edge_fc/src/ai_edge_fc_platform_interface.dart';
 import 'package:ai_edge_fc/src/ai_edge_fc_method_channel.dart';
+import 'package:ai_edge_fc/src/ai_edge_fc_platform_interface.dart';
 import 'package:ai_edge_fc/src/model/models.dart';
+import 'package:ai_edge_fc/src/model/struct.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 class MockAiEdgeFcPlatform extends Fake

@@ -1,8 +1,8 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:ai_edge_fc/src/model/function_declaration.dart';
 import 'package:ai_edge_fc/src/model/function_property.dart';
 import 'package:ai_edge_fc/src/proto/local_agents/core/proto/content.pb.dart'
     as pb;
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('FunctionDeclaration', () {

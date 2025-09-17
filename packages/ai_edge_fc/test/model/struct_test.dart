@@ -1,7 +1,7 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:ai_edge_fc/src/model/struct.dart';
 import 'package:ai_edge_fc/src/proto/google/protobuf/struct.pb.dart'
     as structpb;
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('Struct', () {

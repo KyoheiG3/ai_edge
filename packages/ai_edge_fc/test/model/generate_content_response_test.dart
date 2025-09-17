@@ -1,15 +1,15 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:ai_edge_fc/src/model/generate_content_response.dart' as gen;
 import 'package:ai_edge_fc/src/model/content.dart';
-import 'package:ai_edge_fc/src/model/part.dart';
 import 'package:ai_edge_fc/src/model/function_call.dart';
+import 'package:ai_edge_fc/src/model/generate_content_response.dart' as gen;
+import 'package:ai_edge_fc/src/model/part.dart';
 import 'package:ai_edge_fc/src/model/struct.dart';
+import 'package:ai_edge_fc/src/proto/google/protobuf/struct.pb.dart'
+    as structpb;
 import 'package:ai_edge_fc/src/proto/local_agents/core/proto/content.pb.dart'
     as pb;
 import 'package:ai_edge_fc/src/proto/local_agents/core/proto/generative_service.pb.dart'
     as genpb;
-import 'package:ai_edge_fc/src/proto/google/protobuf/struct.pb.dart'
-    as structpb;
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('GenerateContentResponse', () {

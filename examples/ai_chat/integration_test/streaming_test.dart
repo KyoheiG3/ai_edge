@@ -1,6 +1,6 @@
+import 'package:ai_edge/ai_edge.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:ai_edge/ai_edge.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();

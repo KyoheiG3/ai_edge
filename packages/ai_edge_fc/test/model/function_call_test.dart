@@ -1,10 +1,10 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:ai_edge_fc/src/model/function_call.dart';
 import 'package:ai_edge_fc/src/model/struct.dart';
-import 'package:ai_edge_fc/src/proto/local_agents/core/proto/content.pb.dart'
-    as pb;
 import 'package:ai_edge_fc/src/proto/google/protobuf/struct.pb.dart'
     as structpb;
+import 'package:ai_edge_fc/src/proto/local_agents/core/proto/content.pb.dart'
+    as pb;
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('FunctionCall', () {

@@ -1,8 +1,10 @@
 import 'dart:math';
-import 'package:flutter/material.dart';
+
 import 'package:ai_edge_fc/ai_edge_fc.dart';
-import '../models/gemma_model.dart';
+import 'package:flutter/material.dart';
+
 import '../models/chat_message.dart';
+import '../models/gemma_model.dart';
 
 class ChatScreen extends StatefulWidget {
   final GemmaModel model;

@@ -6,3 +6,7 @@ include: package:flutter_lints/flutter.yaml
 analyzer:
   exclude:
     - "packages/ai_edge_fc/**/src/proto/**"
+
+linter:
+  rules:
+    - directives_ordering

@@ -2,11 +2,11 @@ import 'dart:typed_data';
 
 import 'package:ai_edge_fc/src/proto/local_agents/core/proto/generative_service.pb.dart'
     as pb;
+import 'package:collection/collection.dart';
 
 import 'content.dart';
 import 'function_call.dart';
 import 'part.dart';
-import 'package:collection/collection.dart';
 
 /// Represents a response from a content generation request.
 ///

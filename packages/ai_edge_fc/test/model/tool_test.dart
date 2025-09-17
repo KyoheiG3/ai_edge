@@ -1,6 +1,6 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:ai_edge_fc/src/model/tool.dart';
 import 'package:ai_edge_fc/src/model/function_declaration.dart';
+import 'package:ai_edge_fc/src/model/tool.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('Tool', () {

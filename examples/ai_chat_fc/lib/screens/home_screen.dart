@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import '../models/gemma_model.dart';
+
 import '../models/download_progress.dart';
-import '../services/model_download_service.dart';
+import '../models/gemma_model.dart';
 import '../services/config_service.dart';
+import '../services/model_download_service.dart';
 import 'chat_screen.dart';
 import 'settings_screen.dart';
 

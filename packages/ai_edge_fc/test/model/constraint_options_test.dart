@@ -1,7 +1,7 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:ai_edge_fc/src/model/constraint_options.dart';
 import 'package:ai_edge_fc/src/proto/local_agents/function_calling/core/proto/constraint_options.pb.dart'
     as pb;
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('ConstraintOptions', () {
