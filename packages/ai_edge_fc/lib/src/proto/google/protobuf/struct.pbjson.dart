@@ -1,6 +1,6 @@
 // This is a generated file - do not edit.
 //
-// Generated from protobuf/src/google/protobuf/struct.proto.
+// Generated from google/protobuf/struct.proto.
 
 // @dart = 3.3
 
