@@ -19,6 +19,7 @@ dependencies:
   ai_edge: ^0.2.0
   protobuf: ^4.2.0
   collection: ^1.19.1
+  fixnum: ^1.1.1
 
 dev_dependencies:
   flutter_test:
