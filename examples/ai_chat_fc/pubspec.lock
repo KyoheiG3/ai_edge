@@ -21,7 +21,7 @@ packages:
       path: "../../packages/ai_edge_model_dl"
       relative: true
     source: path
-    version: "0.0.1"
+    version: "0.1.0"
   async:
     dependency: transitive
     description:
