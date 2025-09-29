@@ -17,7 +17,7 @@ A comprehensive Flutter plugin suite for on-device AI inference powered by Googl
 
 ## 📦 Packages
 
-This monorepo contains two main packages:
+This monorepo contains three main packages:
 
 ### [ai_edge](packages/ai_edge/)
 Core package for basic on-device AI inference.
@@ -34,6 +34,15 @@ Extended package with function calling capabilities. **⚠️ Currently Android-
 - Structured output with constraints
 - Tool integration for complex workflows
 - System instructions for behavior customization
+
+### [ai_edge_model_dl](packages/ai_edge_model_dl/)
+Efficient model downloader for AI Edge with advanced features.
+
+- Resumable downloads with automatic retry
+- Real-time progress tracking with speed and time estimates
+- Checksum validation (MD5/SHA256) for model integrity
+- Parallel chunk downloading for optimized performance
+- Platform-specific storage management
 
 ## 🎮 Example Apps
 
@@ -80,6 +89,10 @@ dependencies:
 # For AI with function calling
 dependencies:
   ai_edge_fc:
+
+# For efficient model downloading
+dependencies:
+  ai_edge_model_dl:
 ```
 
 ### Quick Example
@@ -147,6 +160,31 @@ if (response.functionCall != null) {
   );
   final finalResponse = await aiEdgeFc.sendFunctionResponse(functionResponse);
 }
+```
+
+#### Model Downloading (ai_edge_model_dl)
+```dart
+import 'package:ai_edge_model_dl/ai_edge_model_dl.dart';
+import 'package:ai_edge/ai_edge.dart';
+
+final downloader = ModelDownloader();
+
+// Download model with progress tracking
+final result = await downloader.downloadModel(
+  Uri.parse('https://example.com/model.task'),
+  fileName: 'gemma.task',
+  onProgress: (progress) {
+    print('Progress: ${(progress.progress * 100).toStringAsFixed(1)}%');
+    print('Speed: ${progress.speed}');
+  },
+);
+
+// Use downloaded model with AI Edge
+final aiEdge = AiEdge.instance;
+await aiEdge.initialize(
+  modelPath: result.filePath,  // Direct path from downloader
+  maxTokens: 1024,
+);
 ```
 
 ## 📱 Platform Configuration
