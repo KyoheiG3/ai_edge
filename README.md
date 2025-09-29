@@ -2,7 +2,7 @@
 
 [![pub package](https://img.shields.io/pub/v/ai_edge.svg)](https://pub.dev/packages/ai_edge)
 [![Platform](https://img.shields.io/badge/platform-Android%20%7C%20iOS-green.svg)](https://pub.dev/packages/ai_edge)
-[![License: BSD](https://img.shields.io/badge/license-BSD-purple.svg)](https://opensource.org/licenses/BSD-3-Clause)
+[![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
 A comprehensive Flutter plugin suite for on-device AI inference powered by Google's MediaPipe GenAI framework, enabling powerful language models to run directly on mobile devices without internet connectivity.
 

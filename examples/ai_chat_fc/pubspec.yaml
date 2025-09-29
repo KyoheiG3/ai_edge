@@ -12,9 +12,9 @@ dependencies:
     sdk: flutter
   ai_edge_fc:
     path: ../../packages/ai_edge_fc
+  ai_edge_model_dl:
+    path: ../../packages/ai_edge_model_dl
   cupertino_icons: ^1.0.8
-  http: ^1.5.0
-  path_provider: ^2.1.5
   shared_preferences: ^2.5.3
 
 dev_dependencies:

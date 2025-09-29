@@ -1,0 +1,24 @@
+name: ai_edge_model_dl
+description: "A new Flutter package project."
+version: 0.0.1
+homepage: https://github.com/KyoheiG3/ai_edge
+repository: https://github.com/KyoheiG3/ai_edge
+documentation: https://github.com/KyoheiG3/ai_edge
+issue_tracker: https://github.com/KyoheiG3/ai_edge/issues
+
+environment:
+  sdk: ^3.8.0
+  flutter: ">=3.32.0"
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  path_provider: ^2.1.5
+  range_request: ^0.2.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
