@@ -31,7 +31,7 @@ class ModelDownloadProgress {
         : 0;
 
     return ModelDownloadProgress(
-      progress: downloadedBytes / totalBytes,
+      progress: totalBytes > 0 ? downloadedBytes / totalBytes : 0.0,
       downloadedBytes: downloadedBytes,
       totalBytes: totalBytes,
       bytesPerSecond: currentSpeed.toDouble(),
