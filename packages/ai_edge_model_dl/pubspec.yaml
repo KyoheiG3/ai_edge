@@ -1,6 +1,6 @@
 name: ai_edge_model_dl
-description: "A new Flutter package project."
-version: 0.0.1
+description: "Efficient model downloader for AI Edge with resumable downloads, progress tracking, and validation."
+version: 0.1.0
 homepage: https://github.com/KyoheiG3/ai_edge
 repository: https://github.com/KyoheiG3/ai_edge
 documentation: https://github.com/KyoheiG3/ai_edge
