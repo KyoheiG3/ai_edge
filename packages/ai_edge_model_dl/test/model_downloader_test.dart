@@ -433,6 +433,36 @@ void main() {
           expect(result.checksumType, expectedResult.checksumType);
         });
       });
+
+      group('exception toString', () {
+        test('should format exception message correctly', () {
+          // Given
+          final checksumException = ModelDownloaderException.checksumMismatch(
+            expected: 'abc123',
+            actual: 'def456',
+          );
+          final sizeException = ModelDownloaderException.fileSizeMismatch(
+            expected: 1000,
+            actual: 2000,
+          );
+          final formatException =
+              ModelDownloaderException.invalidChecksumFormat(length: 10);
+
+          // When & Then
+          expect(
+            checksumException.toString(),
+            contains('ModelDownloaderException[checksumMismatch]'),
+          );
+          expect(
+            sizeException.toString(),
+            contains('ModelDownloaderException[fileSizeMismatch]'),
+          );
+          expect(
+            formatException.toString(),
+            contains('ModelDownloaderException[invalidChecksumFormat]'),
+          );
+        });
+      });
     });
 
     group('cancelDownload', () {
