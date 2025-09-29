@@ -53,6 +53,9 @@ jobs:
           cd packages/ai_edge_fc
           flutter test --coverage
           cd -
+          cd packages/ai_edge_model_dl
+          flutter test --coverage
+          cd -
 
       - name: Exclude files from coverage
         run: dart run lcov_excluder exclude
