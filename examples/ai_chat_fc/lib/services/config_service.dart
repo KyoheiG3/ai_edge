@@ -41,12 +41,12 @@ class ConfigService {
   }
 
   /// Get authorization header if token is available and enabled
-  Future<Map<String, String>?> getAuthorizationHeader() async {
+  Future<Map<String, String>> getAuthorizationHeader() async {
     final isEnabled = await isTokenEnabled();
-    if (!isEnabled) return null;
+    if (!isEnabled) return {};
 
     final token = await getHuggingFaceToken();
-    if (token == null || token.isEmpty) return null;
+    if (token == null || token.isEmpty) return {};
 
     return {'Authorization': 'Bearer $token'};
   }

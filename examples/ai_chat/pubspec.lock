@@ -8,6 +8,13 @@ packages:
       relative: true
     source: path
     version: "0.2.0"
+  ai_edge_model_dl:
+    dependency: "direct main"
+    description:
+      path: "../../packages/ai_edge_model_dl"
+      relative: true
+    source: path
+    version: "0.0.1"
   async:
     dependency: transitive
     description:
@@ -48,6 +55,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.19.1"
+  crypto:
+    dependency: transitive
+    description:
+      name: crypto
+      sha256: "1e445881f28f22d6140f181e07737b22f1e099a5e1ff94b0af2f9e4a463f4855"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.6"
   cupertino_icons:
     dependency: "direct main"
     description:
@@ -114,7 +129,7 @@ packages:
     source: sdk
     version: "0.0.0"
   http:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: http
       sha256: bb2ce4590bc2667c96f318d68cac1b5a7987ec819351d32b1c987239a815e007
@@ -199,7 +214,7 @@ packages:
     source: hosted
     version: "1.9.1"
   path_provider:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: path_provider
       sha256: "50c5dd5b6e1aaf6fb3a78b33f6aa3afca52bf903a8a5298f53101fdaee55bbcd"
@@ -270,6 +285,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.0.3"
+  range_request:
+    dependency: transitive
+    description:
+      name: range_request
+      sha256: cd5f03bc26d31b323ff20f9af1dac488f0ff7737965378d6711f4b763dd81b57
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.0"
   shared_preferences:
     dependency: "direct main"
     description:

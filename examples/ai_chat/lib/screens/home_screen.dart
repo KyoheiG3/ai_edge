@@ -1,9 +1,8 @@
+import 'package:ai_edge_model_dl/ai_edge_model_dl.dart';
 import 'package:flutter/material.dart';
 
-import '../models/download_progress.dart';
 import '../models/gemma_model.dart';
 import '../services/config_service.dart';
-import '../services/model_download_service.dart';
 import 'chat_screen.dart';
 import 'settings_screen.dart';
 
@@ -15,21 +14,34 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final ModelDownloadService _downloadService = ModelDownloadService();
+  late ModelDownloader _downloader;
   final ConfigService _configService = ConfigService();
   final Map<String, bool> _downloadedModels = {};
-  final Map<String, DownloadProgress?> _downloadProgress = {};
+  final Map<String, ModelDownloadProgress?> _downloadProgress = {};
   final Map<String, bool> _isDownloading = {};
 
   @override
   void initState() {
     super.initState();
-    _checkDownloadedModels();
+    _initializeService();
+  }
+
+  Future<void> _initializeService() async {
+    // Get authorization headers from config service
+    final authHeaders = await _configService.getAuthorizationHeader();
+
+    // Create download service with auth headers
+    _downloader = ModelDownloader(
+      config: ModelDownloaderConfig(headers: authHeaders),
+    );
+
+    // Check downloaded models after service is initialized
+    await _checkDownloadedModels();
   }
 
   Future<void> _checkDownloadedModels() async {
     for (final model in GemmaModel.availableModels) {
-      final isDownloaded = await _downloadService.isModelDownloaded(model);
+      final isDownloaded = await _downloader.isModelDownloaded(model.fileName);
       setState(() {
         _downloadedModels[model.id] = isDownloaded;
       });
@@ -81,13 +93,21 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     try {
-      await for (final progress in _downloadService.downloadModelWithProgress(
-        model,
-      )) {
-        setState(() {
-          _downloadProgress[model.id] = progress;
-        });
-      }
+      // Re-initialize service with latest auth headers
+      final authHeaders = await _configService.getAuthorizationHeader();
+      _downloader = ModelDownloader(
+        config: ModelDownloaderConfig(headers: authHeaders),
+      );
+
+      await _downloader.downloadModel(
+        Uri.parse(model.downloadUrl),
+        fileName: model.fileName,
+        onProgress: (progress) {
+          setState(() {
+            _downloadProgress[model.id] = progress;
+          });
+        },
+      );
 
       setState(() {
         _downloadedModels[model.id] = true;
@@ -136,7 +156,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
 
     if (confirmed == true) {
-      await _downloadService.deleteModel(model);
+      await _downloader.deleteModel(model.fileName);
       setState(() {
         _downloadedModels[model.id] = false;
       });
@@ -149,7 +169,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _openChat(GemmaModel model) async {
-    final modelPath = await _downloadService.getModelPath(model);
+    final modelPath = await _downloader.getModelPath(model.fileName);
     if (mounted) {
       Navigator.push(
         context,
