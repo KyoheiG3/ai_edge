@@ -1,6 +1,5 @@
 import 'package:ai_edge_model_dl/ai_edge_model_dl.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:range_request/range_request.dart';
 
 void main() {
   group('ModelDownloaderConfig', () {
