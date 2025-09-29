@@ -2,7 +2,7 @@
 
 [![pub package](https://img.shields.io/pub/v/ai_edge_fc.svg)](https://pub.dev/packages/ai_edge_fc)
 [![Platform](https://img.shields.io/badge/platform-Android-green.svg)](https://pub.dev/packages/ai_edge_fc)
-[![License: BSD](https://img.shields.io/badge/license-BSD-purple.svg)](https://opensource.org/licenses/BSD-3-Clause)
+[![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
 A Flutter plugin for on-device AI inference with function calling capabilities powered by MediaPipe GenAI. Enable your LLMs to interact with external tools and APIs while keeping everything on-device.
 
