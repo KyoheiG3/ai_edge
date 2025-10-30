@@ -39,6 +39,9 @@ jobs:
           cd examples/ai_chat_fc
           flutter pub get
           cd -
+          cd examples/ai_chat_rag
+          flutter pub get
+          cd -
 
       - name: Dart Analyzer
         uses: invertase/github-action-dart-analyzer@e981b01a458d0bab71ee5da182e5b26687b7101b # v3.0.0
@@ -54,6 +57,9 @@ jobs:
           flutter test --coverage
           cd -
           cd packages/ai_edge_model_dl
+          flutter test --coverage
+          cd -
+          cd packages/ai_edge_rag
           flutter test --coverage
           cd -
 
