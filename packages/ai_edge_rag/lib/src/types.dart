@@ -100,6 +100,8 @@ final class EmbeddingModelConfig {
   final String embeddingModelPath;
 
   /// The type of embedding model being used.
+  ///
+  /// If not specified, defaults to [EmbeddingModelType.gemma].
   final EmbeddingModelType? modelType;
 
   /// Optional vector store type for storing embeddings.
