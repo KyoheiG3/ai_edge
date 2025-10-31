@@ -5,3 +5,4 @@ coverage:
     - packages/ai_edge/coverage/lcov.info
     - packages/ai_edge_fc/coverage/lcov.info
     - packages/ai_edge_model_dl/coverage/lcov.info
+    - packages/ai_edge_rag/coverage/lcov.info

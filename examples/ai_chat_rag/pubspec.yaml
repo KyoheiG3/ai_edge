@@ -1,0 +1,34 @@
+name: ai_chat_rag
+description: "Demonstrates how to use the ai_edge_rag plugin."
+version: 1.0.0
+publish_to: "none"
+
+environment:
+  sdk: ^3.8.0
+  flutter: ">=3.32.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  ai_edge_rag:
+    path: ../../packages/ai_edge_rag
+  ai_edge_model_dl:
+    path: ../../packages/ai_edge_model_dl
+  cupertino_icons: ^1.0.8
+  shared_preferences: ^2.5.3
+
+dev_dependencies:
+  integration_test:
+    sdk: flutter
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/
+
+dependency_overrides:
+  ai_edge:
+    path: ../../packages/ai_edge
