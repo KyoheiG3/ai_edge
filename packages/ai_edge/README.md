@@ -145,6 +145,21 @@ await aiEdge.initialize(
   </dict>
   ```
 
+- **Recommended Devices**:
+
+  - Optimal performance on iPhone 12 or newer
+  - iPad with A14 Bionic chip or later
+  - Other high-end iOS devices with comparable specs
+
+- For large models, you may need to increase memory limit by adding the following entitlement to `ios/Runner/Runner.entitlements`:
+  ```xml
+  <dict>
+    <key>com.apple.developer.kernel.increased-memory-limit</key>
+    <true/>
+  </dict>
+  ```
+  Make sure to configure `CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;` in your Xcode project settings.
+
 ### Android Requirements
 
 - **Minimum SDK**: Android API level 24 (Android 7.0) or later
