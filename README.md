@@ -262,6 +262,19 @@ await aiEdge.initialize(
 
 ## 📱 Platform Configuration
 
+### iOS
+
+The plugin automatically includes necessary MediaPipe frameworks. For large models, you may need to increase memory limit by adding the following entitlement to `ios/Runner/Runner.entitlements`:
+
+```xml
+<dict>
+  <key>com.apple.developer.kernel.increased-memory-limit</key>
+  <true/>
+</dict>
+```
+
+Make sure to configure `CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;` in your Xcode project settings.
+
 ### Android
 
 Update `android/app/build.gradle`:
@@ -281,10 +294,6 @@ For large models, add to `AndroidManifest.xml`:
     android:largeHeap="true"
     ...>
 ```
-
-### iOS
-
-The plugin automatically includes necessary MediaPipe frameworks. No additional configuration needed.
 
 ## 📝 License
 
